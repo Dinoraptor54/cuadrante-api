@@ -14,3 +14,17 @@ psycopg2-binary>=2.9.9  # PostgreSQL (para producción)
 # Utilidades
 python-dotenv>=1.0.0
 requests>=2.31.0
+
+# Seguridad y validación
+email-validator>=2.0.0
+python-multipart>=0.0.6
+
+# Testing
+pytest>=7.4.3
+pytest-asyncio>=0.21.0
+httpx>=0.25.0
+
+# Linting y formateo (desarrollo)
+black>=23.0.0
+flake8>=6.0.0
+pylint>=3.0.0

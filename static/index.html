@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuadrantes Vigilantes</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css?v=4">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="description" content="App para consultar cuadrantes de vigilantes">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Login View -->
+        <section id="login-view" class="view active">
+            <div class="login-container">
+                <h1>🔐 Acceso Vigilantes</h1>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Usuario (Email)</label>
+                        <input type="email" id="username" placeholder="admin@test.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" placeholder="1234" required>
+                    </div>
+                    <button type="submit" id="login-btn">Entrar</button>
+                    <p id="login-error" class="error-msg"></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view hidden">
+            <header class="app-header">
+                <h2>Mi Perfil</h2>
+                <button id="logout-btn">Salir</button>
+            </header>
+            <div class="content">
+                <div class="user-card">
+                    <div class="avatar">👤</div>
+                    <h3 id="user-name">Cargando...</h3>
+                    <p id="user-role">...</p>
+                    <p id="user-location">...</p>
+                </div>
+
+                <div class="actions">
+                    <button class="action-btn" onclick="window.location.hash = '#schedule'">
+                        📅 Ver Cuadrante
+                    </button>
+                    <button class="action-btn" onclick="window.location.hash = '#vacation'">
+                        🏖️ Solicitar Vacaciones
+                    </button>
+                    <button class="action-btn" onclick="alert('Funcionalidad en desarrollo: Solicitar Cambio')">
+                        🔄 Solicitar Cambio
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule View -->
+        <section id="schedule-view" class="view hidden">
+            <header class="app-header">
+                <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                <h2>Cuadrante</h2>
+            </header>
+            <div class="content">
+                <div class="employee-selector">
+                    <button id="prev-employee" onclick="changeEmployee(-1)">◀ Anterior</button>
+                    <div id="employee-list" class="employee-list"></div>
+                    <button id="next-employee" onclick="changeEmployee(1)">Siguiente ▶</button>
+                </div>
+
+                <div class="month-selector">
+                    <button id="prev-month">◀</button>
+                    <span id="current-month-display">Diciembre 2025</span>
+                    <button id="next-month">▶</button>
+                </div>
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Calendar days will be injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Vacation Request View -->
+        <section id="vacation-view" class="view hidden">
+            <header class="app-header">
+                <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                <h2>Solicitar Vacaciones</h2>
+            </header>
+            <div class="content">
+                <div class="login-container" style="justify-content: flex-start; padding-top: 2rem;">
+                    <form id="vacation-form">
+                        <div class="form-group">
+                            <label for="vac-start">Fecha Inicio</label>
+                            <input type="date" id="vac-start" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vac-end">Fecha Fin</label>
+                            <input type="date" id="vac-end" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vac-reason">Motivo (Opcional)</label>
+                            <input type="text" id="vac-reason" placeholder="Ej: Vacaciones de verano">
+                        </div>
+                        <button type="submit">Enviar Solicitud</button>
+                        <p id="vacation-msg" class="error-msg" style="color: var(--text-main);"></p>
+                    </form>
+                </div>
+            </div>
+            <!DOCTYPE html>
+            <html lang="es">
+
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cuadrantes Vigilantes</title>
+                <link rel="manifest" href="manifest.json">
+                <link rel="stylesheet" href="css/style.css?v=4">
+                <meta name="theme-color" content="#1e293b">
+                <meta name="description" content="App para consultar cuadrantes de vigilantes">
+            </head>
+
+            <body>
+                <div id="app">
+                    <!-- Login View -->
+                    <section id="login-view" class="view active">
+                        <div class="login-container">
+                            <h1>🔐 Acceso Vigilantes</h1>
+                            <form id="login-form">
+                                <div class="form-group">
+                                    <label for="username">Usuario (Email)</label>
+                                    <input type="email" id="username" placeholder="admin@test.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Contraseña</label>
+                                    <input type="password" id="password" placeholder="1234" required>
+                                </div>
+                                <button type="submit" id="login-btn">Entrar</button>
+                                <p id="login-error" class="error-msg"></p>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Dashboard View -->
+                    <section id="dashboard-view" class="view hidden">
+                        <header class="app-header">
+                            <h2>Mi Perfil</h2>
+                            <button id="logout-btn">Salir</button>
+                        </header>
+                        <div class="content">
+                            <div class="user-card">
+                                <div class="avatar">👤</div>
+                                <h3 id="user-name">Cargando...</h3>
+                                <p id="user-role">...</p>
+                                <p id="user-location">...</p>
+                            </div>
+
+                            <div class="actions">
+                                <button class="action-btn" onclick="window.location.hash = '#schedule'">
+                                    📅 Ver Cuadrante
+                                </button>
+                                <button class="action-btn" onclick="window.location.hash = '#vacation'">
+                                    🏖️ Solicitar Vacaciones
+                                </button>
+                                <button class="action-btn"
+                                    onclick="alert('Funcionalidad en desarrollo: Solicitar Cambio')">
+                                    🔄 Solicitar Cambio
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Schedule View -->
+                    <section id="schedule-view" class="view hidden">
+                        <header class="app-header">
+                            <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                            <h2>Cuadrante</h2>
+                        </header>
+                        <div class="content">
+                            <div class="employee-selector">
+                                <button id="prev-employee" onclick="changeEmployee(-1)">◀ Anterior</button>
+                                <div id="employee-list" class="employee-list"></div>
+                                <button id="next-employee" onclick="changeEmployee(1)">Siguiente ▶</button>
+                            </div>
+
+                            <div class="month-selector">
+                                <button id="prev-month">◀</button>
+                                <span id="current-month-display">Diciembre 2025</span>
+                                <button id="next-month">▶</button>
+                            </div>
+                            <div id="calendar-grid" class="calendar-grid">
+                                <!-- Calendar days will be injected here -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Vacation Request View -->
+                    <section id="vacation-view" class="view hidden">
+                        <header class="app-header">
+                            <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                            <h2>Solicitar Vacaciones</h2>
+                        </header>
+                        <div class="content">
+                            <div class="login-container" style="justify-content: flex-start; padding-top: 2rem;">
+                                <form id="vacation-form">
+                                    <div class="form-group">
+                                        <label for="vac-start">Fecha Inicio</label>
+                                        <input type="date" id="vac-start" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vac-end">Fecha Fin</label>
+                                        <input type="date" id="vac-end" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vac-reason">Motivo (Opcional)</label>
+                                        <input type="text" id="vac-reason" placeholder="Ej: Vacaciones de verano">
+                                    </div>
+                                    <button type="submit">Enviar Solicitud</button>
+                                    <p id="vacation-msg" class="error-msg" style="color: var(--text-main);"></p>
+                                </form>
+                                <button type="submit" id="login-btn">Entrar</button>
+                                <p id="login-error" class="error-msg"></p>
+                                </form>
+                            </div>
+                    </section>
+
+                    <!-- Dashboard View -->
+                    <section id="dashboard-view" class="view hidden">
+                        <header class="app-header">
+                            <h2>Mi Perfil</h2>
+                            <button id="logout-btn">Salir</button>
+                        </header>
+                        <div class="content">
+                            <div class="user-card">
+                                <div class="avatar">👤</div>
+                                <h3 id="user-name">Cargando...</h3>
+                                <p id="user-role">...</p>
+                                <p id="user-location">...</p>
+                            </div>
+
+                            <div class="actions">
+                                <button class="action-btn" onclick="window.location.hash = '#schedule'">
+                                    📅 Ver Cuadrante
+                                </button>
+                                <button class="action-btn" onclick="window.location.hash = '#vacation'">
+                                    🏖️ Solicitar Vacaciones
+                                </button>
+                                <button class="action-btn"
+                                    onclick="alert('Funcionalidad en desarrollo: Solicitar Cambio')">
+                                    🔄 Solicitar Cambio
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Schedule View -->
+                    <section id="schedule-view" class="view hidden">
+                        <header class="app-header">
+                            <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                            <h2>Cuadrante</h2>
+                        </header>
+                        <div class="content">
+                            <div class="employee-selector">
+                                <button id="prev-employee" onclick="changeEmployee(-1)">◀ Anterior</button>
+                                <div id="employee-list" class="employee-list"></div>
+                                <button id="next-employee" onclick="changeEmployee(1)">Siguiente ▶</button>
+                            </div>
+
+                            <div class="month-selector">
+                                <button id="prev-month">◀</button>
+                                <span id="current-month-display">Diciembre 2025</span>
+                                <button id="next-month">▶</button>
+                            </div>
+                            <div id="calendar-grid" class="calendar-grid">
+                                <!-- Calendar days will be injected here -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Vacation Request View -->
+                    <section id="vacation-view" class="view hidden">
+                        <header class="app-header">
+                            <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                            <h2>Solicitar Vacaciones</h2>
+                        </header>
+                        <div class="content">
+                            <div class="login-container" style="justify-content: flex-start; padding-top: 2rem;">
+                                <form id="vacation-form">
+                                    <div class="form-group">
+                                        <label for="vac-start">Fecha Inicio</label>
+                                        <input type="date" id="vac-start" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vac-end">Fecha Fin</label>
+                                        <input type="date" id="vac-end" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vac-reason">Motivo (Opcional)</label>
+                                        <input type="text" id="vac-reason" placeholder="Ej: Vacaciones de verano">
+                                    </div>
+                                    <button type="submit">Enviar Solicitud</button>
+                                    <p id="vacation-msg" class="error-msg" style="color: var(--text-main);"></p>
+                                </form>
+                            </div>
+                        </div>
+                        <!DOCTYPE html>
+                        <html lang="es">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Cuadrantes Vigilantes</title>
+                            <link rel="manifest" href="manifest.json">
+                            <link rel="stylesheet" href="css/style.css?v=4">
+                            <meta name="theme-color" content="#1e293b">
+                            <meta name="description" content="App para consultar cuadrantes de vigilantes">
+                        </head>
+
+                        <body>
+                            <div id="app">
+                                <!-- Login View -->
+                                <section id="login-view" class="view active">
+                                    <div class="login-container">
+                                        <h1>🔐 Acceso Vigilantes</h1>
+                                        <form id="login-form">
+                                            <div class="form-group">
+                                                <label for="username">Usuario (Email)</label>
+                                                <input type="email" id="username" placeholder="admin@test.com" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="password">Contraseña</label>
+                                                <input type="password" id="password" placeholder="1234" required>
+                                            </div>
+                                            <button type="submit" id="login-btn">Entrar</button>
+                                            <p id="login-error" class="error-msg"></p>
+                                        </form>
+                                    </div>
+                                </section>
+
+                                <!-- Dashboard View -->
+                                <section id="dashboard-view" class="view hidden">
+                                    <header class="app-header">
+                                        <h2>Mi Perfil</h2>
+                                        <button id="logout-btn">Salir</button>
+                                    </header>
+                                    <div class="content">
+                                        <div class="user-card">
+                                            <div class="avatar">👤</div>
+                                            <h3 id="user-name">Cargando...</h3>
+                                            <p id="user-role">...</p>
+                                            <p id="user-location">...</p>
+                                        </div>
+
+                                        <div class="actions">
+                                            <button class="action-btn" onclick="window.location.hash = '#schedule'">
+                                                📅 Ver Cuadrante
+                                            </button>
+                                            <button class="action-btn" onclick="window.location.hash = '#vacation'">
+                                                🏖️ Solicitar Vacaciones
+                                            </button>
+                                            <button class="action-btn"
+                                                onclick="alert('Funcionalidad en desarrollo: Solicitar Cambio')">
+                                                🔄 Solicitar Cambio
+                                            </button>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Schedule View -->
+                                <section id="schedule-view" class="view hidden">
+                                    <header class="app-header">
+                                        <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅
+                                            Volver</button>
+                                        <h2>Cuadrante</h2>
+                                    </header>
+                                    <div class="content">
+                                        <div class="employee-selector">
+                                            <button id="prev-employee" onclick="changeEmployee(-1)">◀ Anterior</button>
+                                            <div id="employee-list" class="employee-list"></div>
+                                            <button id="next-employee" onclick="changeEmployee(1)">Siguiente ▶</button>
+                                        </div>
+
+                                        <div class="month-selector">
+                                            <button id="prev-month">◀</button>
+                                            <span id="current-month-display">Diciembre 2025</span>
+                                            <button id="next-month">▶</button>
+                                        </div>
+                                        <div id="calendar-grid" class="calendar-grid">
+                                            <!-- Calendar days will be injected here -->
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Vacation Request View -->
+                                <section id="vacation-view" class="view hidden">
+                                    <header class="app-header">
+                                        <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅
+                                            Volver</button>
+                                        <h2>Solicitar Vacaciones</h2>
+                                    </header>
+                                    <div class="content">
+                                        <div class="login-container"
+                                            style="justify-content: flex-start; padding-top: 2rem;">
+                                            <form id="vacation-form">
+                                                <div class="form-group">
+                                                    <label for="vac-start">Fecha Inicio</label>
+                                                    <input type="date" id="vac-start" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="vac-end">Fecha Fin</label>
+                                                    <input type="date" id="vac-end" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="vac-reason">Motivo (Opcional)</label>
+                                                    <input type="text" id="vac-reason"
+                                                        placeholder="Ej: Vacaciones de verano">
+                                                </div>
+                                                <button type="submit">Enviar Solicitud</button>
+                                                <p id="vacation-msg" class="error-msg" style="color: var(--text-main);">
+                                                </p>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <!-- Scripts -->
+                            <script type="module" src="js/app.js?v=4"></script>
+                        </body>
+
+                        </html>

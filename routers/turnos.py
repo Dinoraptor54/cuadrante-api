@@ -12,6 +12,11 @@ import json
 import os
 import sys
 
+from sqlalchemy.orm import Session
+from models.database import get_db
+from models.sql_models import Empleado, Turno as TurnoDB, ConfiguracionTurno
+from datetime import date, timedelta
+
 # Importar autenticación
 sys.path.append('..')
 from routers.auth import get_current_user
@@ -26,6 +31,12 @@ class Turno(BaseModel):
     horario: str
     es_festivo: bool = False
 
+class ProximoTurno(BaseModel):
+    fecha: date
+    codigo_turno: str
+    descripcion: str
+    horario: str
+    es_festivo: bool
 
 class CalendarioMes(BaseModel):
     anio: int
@@ -131,17 +142,24 @@ async def get_calendario_completo(
     }
 
 
-@router.get("/proximos-turnos")
+from services import turnos_service
+from models.sql_models import Empleado
+
+@router.get("/proximos-turnos", response_model=List[ProximoTurno])
 async def get_proximos_turnos(
     dias: int = 7,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
-    Obtiene los próximos turnos del vigilante
+    Obtiene los próximos turnos del vigilante desde la base de datos.
     """
-    # TODO: Implementar lógica para obtener próximos N días
-    return {
-        "message": "Próximos turnos",
-        "dias": dias,
-        "turnos": []
-    }
+    nombre_usuario = current_user.get("nombre")
+    empleado = db.query(Empleado).filter(Empleado.nombre_completo == nombre_usuario).first()
+
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    proximos_turnos = turnos_service.get_proximos_turnos_empleado(db, empleado.id, dias)
+    
+    return proximos_turnos

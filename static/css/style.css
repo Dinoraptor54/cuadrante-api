@@ -1,0 +1,322 @@
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --error: #ef4444;
+    --success: #22c55e;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app {
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Views */
+.view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-dark);
+    display: none;
+    /* Hidden by default */
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.view.active {
+    display: block;
+    /* Visible when active */
+}
+
+/* .hidden class no longer needed for views, but kept for utility */
+.hidden {
+    display: none !important;
+}
+
+/* Login */
+.login-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    background: linear-gradient(to right, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.form-group {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    border-color: var(--primary);
+}
+
+button {
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 0.5rem;
+    border: none;
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.error-msg {
+    color: var(--error);
+    margin-top: 1rem;
+    text-align: center;
+    min-height: 1.5rem;
+}
+
+/* Dashboard */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.user-card {
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.user-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-card p {
+    color: var(--text-muted);
+}
+
+.action-btn {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* Schedule */
+.month-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    background-color: var(--bg-card);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.month-selector button {
+    width: auto;
+    padding: 0.5rem 1rem;
+    background: transparent;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.day-cell {
+    aspect-ratio: 1;
+    background-color: var(--bg-card);
+    border-radius: 0.3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    position: relative;
+}
+
+.day-number {
+    font-weight: bold;
+    margin-bottom: 0.2rem;
+}
+
+/* Day Types */
+.day-cell.weekend {
+    background-color: #2a303c; /* Darker/Different tone for weekends */
+    border: 1px solid #3b4555;
+}
+
+.day-cell.holiday {
+    background-color: #3f2e2e; /* Reddish tint for holidays */
+    border: 1px solid #7f1d1d;
+}
+
+.day-cell.weekend .day-number {
+    color: #93c5fd; /* Light blue for weekend numbers */
+}
+
+.day-cell.holiday .day-number {
+    color: #fca5a5; /* Light red for holiday numbers */
+}
+
+/* Shift Badges (Updated) */
+.shift-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: white;
+    margin-top: 0.2rem;
+}
+
+.shift-M {
+    background-color: #fbbf24;
+    /* Mañana - Yellow */
+}
+
+.shift-T {
+    background-color: #f87171;
+    /* Tarde - Red */
+}
+
+.shift-N {
+    background-color: #60a5fa;
+    /* Noche - Blue */
+}
+
+.shift-L {
+    background-color: #22c55e;
+    /* Libre - Green */
+}
+
+.shift-D {
+    background-color: #f97316;
+    /* Diurno - Orange */
+}
+
+.shift-V {
+    background-color: #8b5cf6;
+    /* Vacaciones - Purple */
+}
+
+/* Employee Selector */
+.employee-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: center;
+    background-color: var(--bg-card);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.employee-selector button {
+    flex-shrink: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    width: auto;
+}
+
+#employee-list {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    flex: 1;
+    padding: 0.5rem;
+}
+
+.employee-item {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+
+.employee-item:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.employee-item.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: bold;
+}

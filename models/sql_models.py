@@ -17,7 +17,7 @@ class Empleado(Base):
     __tablename__ = "empleados"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre_completo = Column(String, unique=True, index=True)
+    nombre_completo = Column(String, index=True)
     email = Column(String, nullable=True)
     telefono = Column(String, nullable=True)
     dni = Column(String, nullable=True)
@@ -46,3 +46,36 @@ class ConfiguracionTurno(Base):
     descripcion = Column(String)
     horario = Column(String) # 19:00-07:00
     color = Column(String)
+
+class Permuta(Base):
+    __tablename__ = "permutas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    solicitante_id = Column(Integer, ForeignKey("users.id"))
+    receptor_id = Column(Integer, ForeignKey("users.id"))
+    
+    fecha_solicitud = Column(DateTime, default=datetime.utcnow)
+    fecha_origen = Column(String) # YYYY-MM-DD
+    fecha_destino = Column(String) # YYYY-MM-DD
+    
+    estado = Column(String, default="pendiente") # pendiente, aceptada, rechazada
+    motivo = Column(String, nullable=True)
+
+    solicitante = relationship("User", foreign_keys=[solicitante_id])
+    receptor = relationship("User", foreign_keys=[receptor_id])
+
+class Vacacion(Base):
+    __tablename__ = "vacaciones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    solicitante_id = Column(Integer, ForeignKey("users.id"))
+    
+    fecha_solicitud = Column(DateTime, default=datetime.utcnow)
+    fecha_inicio = Column(String) # YYYY-MM-DD
+    fecha_fin = Column(String) # YYYY-MM-DD
+    
+    estado = Column(String, default="pendiente") # pendiente, aprobada, rechazada
+    motivo = Column(String, nullable=True)
+
+    solicitante = relationship("User", foreign_keys=[solicitante_id])
+
