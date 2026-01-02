@@ -34,13 +34,15 @@ def sync_data(db: Session, data: Dict[str, Any]):
 
         # 2. Sincronizar Turnos
         for anio_str, meses_data in data['cuadrantes'].items():
-            anio = int(anio_str)
+            # Convertir año (puede venir como "2025" o "2025.0")
+            anio = int(float(anio_str))
             for mes_str, vigilantes_list in meses_data.items():
                 # Saltar claves especiales como "11_cambios"
-                if not mes_str.isdigit():
+                if not mes_str.replace('.', '').isdigit():
                     continue
                     
-                mes = int(mes_str)
+                # Convertir mes (puede venir como "11" o "11.0")
+                mes = int(float(mes_str))
                 
                 for vig_data in vigilantes_list:
                     nombre = vig_data["nombre"]
@@ -61,7 +63,7 @@ def sync_data(db: Session, data: Dict[str, Any]):
                             empleado_id=empleado.id,
                             anio=anio,
                             mes=mes,
-                            dia=int(dia_str),
+                            dia=int(float(dia_str)),
                             codigo_turno=codigo
                         )
                         db.add(nuevo_turno)
