@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+print("🚀 INICIANDO MAIN.PY - CARGANDO MÓDULOS...")
+
 """
 API REST para Cuadrante de Vigilantes
 Permite acceso móvil a turnos, permutas y datos de empleados
@@ -9,6 +11,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
+import sys
+
+# Configurar encoding UTF-8 para Windows
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Cargar variables de entorno
 load_dotenv()
@@ -55,7 +64,6 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
     allow_headers=["*"],
 )
 
