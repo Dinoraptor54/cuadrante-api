@@ -99,36 +99,42 @@ async def root():
     }
 
 
-@app.get("/schedule/{year}/{month}")
-async def get_schedule(year: int, month: int):
+@app.get("/api/schedule/{year}/{month}")
+async def get_schedule(
+    year: int, 
+    month: int,
+    current_user: dict = Depends(auth.get_current_user)
+):
     """
     Obtiene el cuadrante de turnos para un mes específico
-    Retorna todos los turnos para todos los empleados
+    Retorna los turnos solo para el usuario autenticado
     """
     from models.database import SessionLocal
     from models.sql_models import Turno, Empleado
     
     db = SessionLocal()
     try:
-        # Obtener todos los turnos del mes
+        # Obtener el empleado asociado al usuario actual
+        nombre_usuario = current_user.get("nombre")
+        empleado = db.query(Empleado).filter(Empleado.nombre_completo == nombre_usuario).first()
+        
+        if not empleado:
+            return {"anio": year, "mes": month, "shifts": {}}
+
+        # Obtener turnos del mes para este empleado
         turnos = db.query(Turno).filter(
+            Turno.empleado_id == empleado.id,
             Turno.anio == year,
             Turno.mes == month
         ).all()
         
-        # Organizar por empleado
-        cuadrante = {}
-        for turno in turnos:
-            empleado = db.query(Empleado).filter(Empleado.id == turno.empleado_id).first()
-            if empleado:
-                if empleado.nombre_completo not in cuadrante:
-                    cuadrante[empleado.nombre_completo] = {}
-                cuadrante[empleado.nombre_completo][turno.dia] = turno.codigo_turno
+        # Formatear como diccionario día -> código (como espera el frontend)
+        shifts = {str(t.dia): t.codigo_turno for t in turnos}
         
         return {
             "anio": year,
             "mes": month,
-            "cuadrante": cuadrante
+            "shifts": shifts
         }
     finally:
         db.close()
