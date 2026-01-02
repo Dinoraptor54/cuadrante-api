@@ -36,6 +36,10 @@ def sync_data(db: Session, data: Dict[str, Any]):
         for anio_str, meses_data in data['cuadrantes'].items():
             anio = int(anio_str)
             for mes_str, vigilantes_list in meses_data.items():
+                # Saltar claves especiales como "11_cambios"
+                if not mes_str.isdigit():
+                    continue
+                    
                 mes = int(mes_str)
                 
                 for vig_data in vigilantes_list:
