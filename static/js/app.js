@@ -13,16 +13,19 @@ const state = {
 
 // Initialize App
 async function init() {
-    registerServiceWorker();
+    unregisterServiceWorker();
     setupEventListeners();
     handleRouting();
 }
 
-function registerServiceWorker() {
+function unregisterServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('Service Worker Registered'))
-            .catch(err => console.error('SW Error:', err));
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            for (let registration of registrations) {
+                registration.unregister();
+                console.log('Service Worker Unregistered (Force Update)');
+            }
+        });
     }
 }
 
