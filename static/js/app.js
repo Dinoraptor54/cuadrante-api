@@ -206,5 +206,9 @@ async function loadSchedule() {
     }
 }
 
-// Start App
-init();
+// Debug Verification
+console.log('APP.JS LOADED v6');
+alert('✅ SISTEMA CARGADO Y LISTO\nSi ves esto, la web funciona.\nPrueba a entrar ahora.');
+
+// Start App safely
+document.addEventListener('DOMContentLoaded', init);
