@@ -58,10 +58,12 @@ class Settings(BaseSettings):
     @property
     def get_allowed_origins(self) -> list:
         """Convierte ALLOWED_ORIGINS string a lista"""
-        return [
-            origin.strip()
-            for origin in self.ALLOWED_ORIGINS.split(",")
-        ]
+        # FORZAR TODO ABIERTO PARA DIAGNOSTICO
+        return ["*"]
+        # return [
+        #     origin.strip()
+        #     for origin in self.ALLOWED_ORIGINS.split(",")
+        # ]
     
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
