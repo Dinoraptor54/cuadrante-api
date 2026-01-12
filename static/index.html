@@ -6,9 +6,297 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cuadrantes Vigilantes</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css?v=6">
     <meta name="theme-color" content="#1e293b">
     <meta name="description" content="App para consultar cuadrantes de vigilantes">
+
+    <!-- INLINE CSS -->
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #64748b;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background-color: var(--bg-card);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Login */
+        .login-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            align-items: center;
+        }
+
+        h1,
+        h2 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--secondary);
+            background: var(--bg-dark);
+            color: white;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        .error-msg {
+            color: var(--error);
+            margin-top: 1rem;
+            text-align: center;
+            min-height: 1.5rem;
+        }
+
+        /* Dashboard */
+        .app-header {
+            padding: 1rem;
+            background: var(--bg-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .app-header button {
+            width: auto;
+            margin: 0;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            background: var(--secondary);
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .user-card {
+            background: var(--bg-dark);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .avatar {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .actions {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: var(--bg-dark);
+            border: 1px solid var(--secondary);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 1rem;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .day-number {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            position: absolute;
+            top: 2px;
+            left: 4px;
+        }
+
+        .weekend {
+            background: #1e1e24;
+            /* Darker for weekend */
+        }
+
+        .shift-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .shift-M {
+            color: #facc15;
+        }
+
+        /* Morning - Yellow */
+        .shift-T {
+            color: #f87171;
+        }
+
+        /* Afternoon - Red */
+        .shift-N {
+            color: #60a5fa;
+        }
+
+        /* Night - Blue */
+        .shift-D {
+            color: #4ade80;
+        }
+
+        /* Day - Green */
+        .shift-L {
+            color: #94a3b8;
+        }
+
+        /* Free - Grey */
+
+        .month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            background: var(--bg-dark);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .month-selector button {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .employee-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .employee-selector button {
+            width: auto;
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        .employee-list {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -20,11 +308,11 @@
                 <form id="login-form">
                     <div class="form-group">
                         <label for="username">Usuario (Email)</label>
-                        <input type="email" id="username" placeholder="admin@test.com" required>
+                        <input type="email" id="username" placeholder="coordinador@capi.com" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Contraseña</label>
-                        <input type="password" id="password" placeholder="1234" required>
+                        <input type="password" id="password" placeholder="admin123" required>
                     </div>
                     <button type="submit" id="login-btn">Entrar</button>
                     <p id="login-error" class="error-msg"></p>
@@ -75,12 +363,10 @@
 
                 <div class="month-selector">
                     <button id="prev-month">◀</button>
-                    <span id="current-month-display">Diciembre 2025</span>
+                    <span id="current-month-display">Buscando fecha...</span>
                     <button id="next-month">▶</button>
                 </div>
-                <div id="calendar-grid" class="calendar-grid">
-                    <!-- Calendar days will be injected here -->
-                </div>
+                <div id="calendar-grid" class="calendar-grid"></div>
             </div>
         </section>
 
@@ -113,8 +399,301 @@
         </section>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/app.js?v=6"></script>
+    <!-- INLINE JAVASCRIPT BUNDLE -->
+    <script>
+        console.log('✅ BUNDLE SCRIPT STARTED');
+        alert('ℹ️ SISTEMA REINICIADO (VERSIÓN TODO-EN-UNO)\nSi ves esto, el código funciona.');
+
+        // --- API MODULE ---
+        const getAPIURL = () => {
+            if (window.location.hostname === 'localhost' && window.location.port === '8000') {
+                return 'http://localhost:8000';
+            }
+            return 'https://cuadrante-api.onrender.com';
+        };
+        const API_URL = getAPIURL();
+
+        const api = {
+            async login(username, password) {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                if (!response.ok) throw new Error('Credenciales incorrectas');
+                return await response.json();
+            },
+            async getMe(token) {
+                const response = await fetch(`${API_URL}/api/empleados/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Error al obtener perfil');
+                return await response.json();
+            },
+            async getSchedule(token, year, month) {
+                const response = await fetch(`${API_URL}/schedule/${year}/${month}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Error al obtener cuadrante');
+                return await response.json();
+            },
+            async requestVacation(token, startDate, endDate, reason) {
+                const response = await fetch(`${API_URL}/api/vacaciones/solicitar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ fecha_inicio: startDate, fecha_fin: endDate, motivo: reason })
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al solicitar vacaciones');
+                }
+                return await response.json();
+            }
+        };
+
+        // --- AUTH MODULE ---
+        const TOKEN_KEY = 'cuadrante_auth_token';
+        const auth = {
+            isAuthenticated() { return !!localStorage.getItem(TOKEN_KEY); },
+            getToken() { return localStorage.getItem(TOKEN_KEY); },
+            async login(username, password) {
+                try {
+                    const data = await api.login(username, password);
+                    localStorage.setItem(TOKEN_KEY, data.access_token);
+                    return true;
+                } catch (error) {
+                    console.error(error);
+                    return false;
+                }
+            },
+            logout() {
+                localStorage.removeItem(TOKEN_KEY);
+                window.location.reload();
+            }
+        };
+
+        // --- UI MODULE ---
+        const ui = {
+            showView(viewId) {
+                document.querySelectorAll('.view').forEach(el => {
+                    el.classList.remove('active');
+                    el.classList.add('hidden');
+                });
+                const activeView = document.getElementById(viewId);
+                if (activeView) {
+                    activeView.classList.remove('hidden');
+                    activeView.classList.add('active');
+                }
+            },
+            renderEmployeeList(employees, selectedIndex) {
+                const list = document.getElementById('employee-list');
+                if (!list) return;
+                list.innerHTML = '';
+                employees.forEach((emp, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'employee-item';
+                    if (idx === selectedIndex) div.classList.add('active');
+                    div.textContent = emp.nombre_completo;
+                    div.onclick = () => {
+                        if (idx !== selectedIndex && typeof changeEmployee === 'function') {
+                            changeEmployee(idx - selectedIndex);
+                        }
+                    };
+                    list.appendChild(div);
+                });
+            },
+            renderProfile(user) {
+                if (Array.isArray(user) && user.length > 0) user = user[0];
+                const nameEl = document.getElementById('user-name');
+                const roleEl = document.getElementById('user-role');
+                if (nameEl) nameEl.textContent = user.nombre_completo || 'Usuario';
+                if (roleEl) roleEl.textContent = user.categoria || 'Vigilante';
+            },
+            renderCalendar(scheduleData, employeeName, year, month) {
+                const grid = document.getElementById('calendar-grid');
+                grid.innerHTML = '';
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                let userShifts = {};
+                if (scheduleData && scheduleData.cuadrante && employeeName) {
+                    userShifts = scheduleData.cuadrante[employeeName] || {};
+                }
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'day-cell';
+                    const date = new Date(year, month - 1, i);
+                    const dayOfWeek = date.getDay();
+                    if (dayOfWeek === 0 || dayOfWeek === 6) dayCell.classList.add('weekend');
+                    const dayNum = document.createElement('span');
+                    dayNum.className = 'day-number';
+                    dayNum.textContent = i;
+                    dayCell.appendChild(dayNum);
+                    const shiftCode = userShifts[i];
+                    if (shiftCode) {
+                        const shiftText = document.createElement('span');
+                        shiftText.className = 'shift-text';
+                        shiftText.classList.add(`shift-${shiftCode}`);
+                        shiftText.textContent = shiftCode;
+                        dayCell.appendChild(shiftText);
+                    }
+                    grid.appendChild(dayCell);
+                }
+                document.getElementById('current-month-display').textContent = `${monthNames[month - 1]} ${year}`;
+            },
+            showError(msg) {
+                document.getElementById('login-error').textContent = msg;
+            }
+        };
+
+        // --- APP LOGIC ---
+        const state = {
+            currentUser: null,
+            currentDate: new Date(),
+            allEmployees: [],
+            selectedEmployeeIndex: 0
+        };
+
+        async function init() {
+            unregisterServiceWorker();
+            setupEventListeners();
+            handleRouting();
+        }
+
+        function unregisterServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                    for (let registration of registrations) {
+                        registration.unregister();
+                        console.log('SW Unregistered');
+                    }
+                });
+            }
+        }
+
+        function setupEventListeners() {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const user = document.getElementById('username').value;
+                    const pass = document.getElementById('password').value;
+                    const success = await auth.login(user, pass);
+                    if (success) {
+                        window.location.hash = '#dashboard';
+                    } else {
+                        ui.showError('Usuario o contraseña incorrectos');
+                        alert('❌ Error al acceder. Revisa credenciales.');
+                    }
+                });
+            }
+
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) logoutBtn.addEventListener('click', () => auth.logout());
+
+            const prevBtn = document.getElementById('prev-month');
+            const nextBtn = document.getElementById('next-month');
+            if (prevBtn) prevBtn.addEventListener('click', () => changeMonth(-1));
+            if (nextBtn) nextBtn.addEventListener('click', () => changeMonth(1));
+
+            window.addEventListener('hashchange', handleRouting);
+
+            const vacationForm = document.getElementById('vacation-form');
+            if (vacationForm) {
+                vacationForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    // Vacation logic... same as before
+                    const start = document.getElementById('vac-start').value;
+                    const end = document.getElementById('vac-end').value;
+                    const reason = document.getElementById('vac-reason').value;
+                    const msgEl = document.getElementById('vacation-msg');
+                    try {
+                        msgEl.textContent = 'Enviando...';
+                        msgEl.style.color = 'var(--text-main)';
+                        const token = auth.getToken();
+                        await api.requestVacation(token, start, end, reason);
+                        msgEl.textContent = '✅ Solicitud enviada';
+                        msgEl.style.color = 'var(--success)';
+                        setTimeout(() => { window.location.hash = '#dashboard'; vacationForm.reset(); msgEl.textContent = ''; }, 2000);
+                    } catch (error) {
+                        msgEl.textContent = `❌ Error: ${error.message}`;
+                        msgEl.style.color = 'var(--error)';
+                    }
+                });
+            }
+        }
+
+        async function handleRouting() {
+            const hash = window.location.hash || '#login';
+            if (!auth.isAuthenticated() && hash !== '#login') {
+                window.location.hash = '#login';
+                return;
+            }
+            if (auth.isAuthenticated() && hash === '#login') {
+                window.location.hash = '#dashboard';
+                return;
+            }
+            switch (hash) {
+                case '#login': ui.showView('login-view'); break;
+                case '#dashboard': await loadDashboard(); ui.showView('dashboard-view'); break;
+                case '#schedule': loadSchedule(); ui.showView('schedule-view'); break;
+                case '#vacation': ui.showView('vacation-view'); break;
+                default: ui.showView('dashboard-view');
+            }
+        }
+
+        function changeMonth(delta) {
+            state.currentDate.setMonth(state.currentDate.getMonth() + delta);
+            loadSchedule();
+        }
+
+        function changeEmployee(delta) {
+            const newIndex = state.selectedEmployeeIndex + delta;
+            if (newIndex >= 0 && newIndex < state.allEmployees.length) {
+                state.selectedEmployeeIndex = newIndex;
+                ui.renderEmployeeList(state.allEmployees, state.selectedEmployeeIndex);
+                ui.renderProfile(state.allEmployees[newIndex]);
+                loadSchedule();
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const token = auth.getToken();
+                const employees = await api.getMe(token);
+                state.allEmployees = Array.isArray(employees) ? employees : [employees];
+                state.selectedEmployeeIndex = 0;
+                ui.renderEmployeeList(state.allEmployees, state.selectedEmployeeIndex);
+                ui.renderProfile(state.allEmployees[0]);
+                loadSchedule();
+            } catch (error) {
+                console.error(error);
+                auth.logout();
+            }
+        }
+
+        async function loadSchedule() {
+            const year = state.currentDate.getFullYear();
+            const month = state.currentDate.getMonth() + 1;
+            try {
+                const token = auth.getToken();
+                const data = await api.getSchedule(token, year, month);
+                const selectedEmployee = state.allEmployees[state.selectedEmployeeIndex];
+                ui.renderCalendar(data, selectedEmployee.nombre_completo, year, month);
+            } catch (error) {
+                console.error(error);
+                ui.renderCalendar(null, null, year, month);
+            }
+        }
+
+        // Initialize safely
+        document.addEventListener('DOMContentLoaded', init);
+        // Also verify manually 
+        if (document.readyState === 'interactive' || document.readyState === 'complete') init();
+
+    </script>
 </body>
 
 </html>
