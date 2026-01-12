@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: str = os.getenv(
         "ALLOWED_ORIGINS",
-        "http://localhost:3000,http://localhost:8000"
+        "*"
     )
     
     @property

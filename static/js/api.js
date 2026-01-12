@@ -2,11 +2,11 @@
 
 // Detectar URL del API
 const getAPIURL = () => {
-    // En desarrollo: localhost:8000
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    // Si estamos en localhost desarrollando el backend:
+    if (window.location.hostname === 'localhost' && window.location.port === '8000') {
         return 'http://localhost:8000';
     }
-    // URL de Producción en Render
+    // Para todo lo demás (frontend local, deploy, móvil, etc), usar Producción:
     return 'https://cuadrante-api.onrender.com';
 };
 

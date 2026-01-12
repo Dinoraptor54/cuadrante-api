@@ -52,7 +52,7 @@ def poblar_usuarios(db: Session):
     if not coordinador:
         coordinador = sql_models.User(
             email="coordinador@capi.com",
-            hashed_password=pwd_context.hash("admin"),
+            hashed_password=pwd_context.hash("admin123"),
             full_name="Molina Alés Eugenia",
             role="coordinador",
             is_active=True

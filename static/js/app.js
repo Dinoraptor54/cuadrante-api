@@ -41,6 +41,7 @@ function setupEventListeners() {
                 window.location.hash = '#dashboard';
             } else {
                 ui.showError('Usuario o contraseña incorrectos');
+                alert('Error al acceder: Verifica usuario/contraseña o tu conexión.');
             }
         });
     }
