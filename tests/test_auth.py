@@ -13,17 +13,10 @@ from models.database import Base, SessionLocal, engine
 from models.sql_models import Empleado, User
 from main import app
 
-client = TestClient(app)
 
 
-@pytest.fixture
-def db_session():
-    """Crea una sesión de BD de prueba"""
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
+
+
 
 
 @pytest.fixture
@@ -52,7 +45,7 @@ def test_user(db_session: Session):
     return usuario
 
 
-def test_login_exitoso(test_user: User):
+def test_login_exitoso(client, test_user: User):
     """Prueba login exitoso"""
     response = client.post(
         "/api/auth/login",
@@ -65,7 +58,7 @@ def test_login_exitoso(test_user: User):
     assert response.status_code in [200, 401]
 
 
-def test_login_usuario_no_existe():
+def test_login_usuario_no_existe(client):
     """Prueba login con usuario inexistente"""
     response = client.post(
         "/api/auth/login",
@@ -78,7 +71,7 @@ def test_login_usuario_no_existe():
     assert "detail" in response.json()
 
 
-def test_login_sin_email():
+def test_login_sin_email(client):
     """Prueba login sin proporcionar email"""
     response = client.post(
         "/api/auth/login",
@@ -87,7 +80,7 @@ def test_login_sin_email():
     assert response.status_code == 422
 
 
-def test_login_sin_password():
+def test_login_sin_password(client):
     """Prueba login sin proporcionar password"""
     response = client.post(
         "/api/auth/login",
@@ -96,7 +89,7 @@ def test_login_sin_password():
     assert response.status_code == 422
 
 
-def test_email_invalido():
+def test_email_invalido(client):
     """Prueba login con email inválido"""
     response = client.post(
         "/api/auth/login",
@@ -121,7 +114,7 @@ def test_email_invalido():
     assert response.status_code in [401, 422]
 
 
-def test_registro_usuario():
+def test_registro_usuario(client):
     """Prueba registro de nuevo usuario"""
     response = client.post(
         "/api/auth/register",
@@ -136,7 +129,7 @@ def test_registro_usuario():
     assert response.status_code in [200, 201, 400]
 
 
-def test_cambiar_password(test_user: User):
+def test_cambiar_password(client, test_user: User):
     """Prueba cambio de contraseña"""
     # Requiere estar autenticado
     response = client.post(
@@ -151,7 +144,7 @@ def test_cambiar_password(test_user: User):
     assert response.status_code in [401, 422]
 
 
-def test_refresh_token():
+def test_refresh_token(client):
     """Prueba refresh de token"""
     # Primero obtener token
     token_response = client.post(

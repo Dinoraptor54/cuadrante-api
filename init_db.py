@@ -140,36 +140,42 @@ def check_db_health():
 
 
 if __name__ == "__main__":
+    # Configurar encoding para Windows
+    import sys
+    if sys.platform == "win32":
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
     
     if len(sys.argv) > 1:
         comando = sys.argv[1].lower()
         
         if comando == "init":
-            print("🚀 Inicializando BD...")
+            print("Inicializando BD...")
             success = init_db()
             sys.exit(0 if success else 1)
         
         elif comando == "reset":
-            print("⚠️  Reseteando BD...")
+            print("Reseteando BD...")
             success = reset_db()
             if success:
                 success = init_db()
             sys.exit(0 if success else 1)
         
         elif comando == "health":
-            print("🏥 Verificando salud de BD...")
+            print("Verificando salud de BD...")
             success = check_db_health()
             sys.exit(0 if success else 1)
         
         else:
-            print(f"❌ Comando desconocido: {comando}")
+            print(f"Comando desconocido: {comando}")
             print("Comandos disponibles: init, reset, health")
             sys.exit(1)
     
     else:
-        print("🚀 Inicializando BD (por defecto)...")
+        print("Inicializando BD (por defecto)...")
         success = init_db()
         if success:
-            print("\n🏥 Verificando salud...")
+            print("\nVerificando salud...")
             check_db_health()
         sys.exit(0 if success else 1)

@@ -14,35 +14,22 @@ from models.sql_models import Empleado, User, Vacacion
 from main import app
 from routers.auth import get_current_user
 
-# Override auth dependency
-async def mock_get_current_user():
-    return {"email": "user1@example.com", "nombre": "Usuario Uno", "rol": "vigilante"}
 
-app.dependency_overrides[get_current_user] = mock_get_current_user
 
-client = TestClient(app)
+
+
+
 
 @pytest.fixture
-def db_session():
-    """Crea una sesión de BD de prueba"""
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
+def mock_auth():
+    """Mock authentication"""
+    from routers.auth import get_current_user
+    async def mock_get_current_user():
+        return {"email": "user1@example.com", "nombre": "Usuario Uno", "rol": "vigilante"}
     
-    # Override get_db to use this session
-    def override_get_db():
-        try:
-            yield db
-        finally:
-            pass
-            
-    app.dependency_overrides[get_db] = override_get_db
-    
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
-    
-    # Remove override
-    del app.dependency_overrides[get_db]
+    app.dependency_overrides[get_current_user] = mock_get_current_user
+    yield
+    del app.dependency_overrides[get_current_user]
 
 @pytest.fixture
 def test_user(db_session: Session):
@@ -57,7 +44,7 @@ def test_user(db_session: Session):
     db_session.commit()
     return usuario
 
-def test_solicitar_vacaciones_exitosas(test_user):
+def test_solicitar_vacaciones_exitosas(client, test_user, mock_auth):
     """Prueba solicitud de vacaciones exitosa"""
     mañana = (date.today() + timedelta(days=1)).isoformat()
     pasado_mañana = (date.today() + timedelta(days=5)).isoformat()
@@ -76,7 +63,7 @@ def test_solicitar_vacaciones_exitosas(test_user):
     assert data["fecha_fin"] == pasado_mañana
     assert data["estado"] == "pendiente"
 
-def test_solicitar_vacaciones_fechas_invalidas(test_user):
+def test_solicitar_vacaciones_fechas_invalidas(client, test_user, mock_auth):
     """Prueba rechazo cuando inicio > fin"""
     mañana = (date.today() + timedelta(days=1)).isoformat()
     ayer = (date.today() - timedelta(days=1)).isoformat()
@@ -91,7 +78,7 @@ def test_solicitar_vacaciones_fechas_invalidas(test_user):
     )
     assert response.status_code == 400
 
-def test_solicitar_vacaciones_formato_invalido(test_user):
+def test_solicitar_vacaciones_formato_invalido(client, test_user, mock_auth):
     """Prueba rechazo de formato de fecha inválido"""
     response = client.post(
         "/api/vacaciones/solicitar",
@@ -103,7 +90,7 @@ def test_solicitar_vacaciones_formato_invalido(test_user):
     )
     assert response.status_code == 422
 
-def test_listar_mis_solicitudes(test_user, db_session):
+def test_listar_mis_solicitudes(client, test_user, db_session, mock_auth):
     """Prueba listado de solicitudes"""
     # Crear una solicitud previa
     vacacion = Vacacion(

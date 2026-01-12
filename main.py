@@ -7,7 +7,7 @@ Permite acceso móvil a turnos, permutas y datos de empleados
 """
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os

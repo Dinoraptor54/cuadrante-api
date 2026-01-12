@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Union, Any
 from jose import jwt
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError
 import os
 from pydantic import ValidationError
 
@@ -15,8 +16,17 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 10080  # 7 días
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifica que la contraseña coincida con el hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """
+    Verifica que la contraseña coincida con el hash.
+    
+    Si el hash almacenado no es reconocible por passlib (por ejemplo, datos
+    antiguos o corruptos), devolvemos False en lugar de propagar la excepción,
+    para que la API responda con 401 en lugar de 500.
+    """
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except UnknownHashError:
+        return False
 
 def get_password_hash(password: str) -> str:
     """Genera hash de contraseña"""

@@ -12,17 +12,10 @@ from models.database import Base, SessionLocal, engine
 from models.sql_models import Empleado, User
 from main import app
 
-client = TestClient(app)
 
 
-@pytest.fixture
-def db_session():
-    """Crea una sesión de BD de prueba"""
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
+
+
 
 
 @pytest.fixture
@@ -48,7 +41,7 @@ def test_user(db_session: Session):
     return usuario
 
 
-def test_get_balance_anio_valido():
+def test_get_balance_anio_valido(client):
     """Prueba obtener balance para año válido"""
     response = client.get(
         "/api/empleados/balance/2025",
@@ -61,7 +54,7 @@ def test_get_balance_anio_valido():
         assert "balance_horas" in data or isinstance(data, dict)
 
 
-def test_get_balance_anio_invalido():
+def test_get_balance_anio_invalido(client):
     """Prueba obtener balance con año inválido"""
     response = client.get(
         "/api/empleados/balance/1900",  # Año fuera de rango
@@ -71,7 +64,7 @@ def test_get_balance_anio_invalido():
     assert response.status_code in [400, 422, 401]
 
 
-def test_get_balance_anio_futuro():
+def test_get_balance_anio_futuro(client):
     """Prueba obtener balance para año muy lejano"""
     response = client.get(
         "/api/empleados/balance/3000",  # Año muy lejano
@@ -81,7 +74,7 @@ def test_get_balance_anio_futuro():
     assert response.status_code in [400, 422, 401]
 
 
-def test_get_mi_perfil():
+def test_get_mi_perfil(client):
     """Prueba obtener mi perfil"""
     response = client.get(
         "/api/empleados/mi-perfil",
@@ -94,7 +87,7 @@ def test_get_mi_perfil():
         assert "email" in data or "nombre" in data
 
 
-def test_actualizar_perfil():
+def test_actualizar_perfil(client):
     """Prueba actualización de perfil"""
     response = client.put(
         "/api/empleados/actualizar-perfil",
@@ -109,7 +102,7 @@ def test_actualizar_perfil():
     assert response.status_code in [200, 401]
 
 
-def test_actualizar_perfil_email_invalido():
+def test_actualizar_perfil_email_invalido(client):
     """Prueba rechazo de email inválido en actualización"""
     response = client.put(
         "/api/empleados/actualizar-perfil",
@@ -124,7 +117,7 @@ def test_actualizar_perfil_email_invalido():
     assert response.status_code in [400, 422, 401]
 
 
-def test_listar_empleados():
+def test_listar_empleados(client):
     """Prueba listado de empleados"""
     response = client.get(
         "/api/empleados/",
@@ -137,7 +130,7 @@ def test_listar_empleados():
         assert isinstance(data, (list, dict))
 
 
-def test_listar_empleados_paginado():
+def test_listar_empleados_paginado(client):
     """Prueba listado de empleados con paginación"""
     response = client.get(
         "/api/empleados/?skip=0&limit=10",
@@ -146,7 +139,7 @@ def test_listar_empleados_paginado():
     assert response.status_code in [200, 401]
 
 
-def test_listar_empleados_limit_invalido():
+def test_listar_empleados_limit_invalido(client):
     """Prueba rechazo de limit inválido"""
     response = client.get(
         "/api/empleados/?limit=2000",  # Exceeds max
@@ -156,7 +149,7 @@ def test_listar_empleados_limit_invalido():
     assert response.status_code in [400, 422, 401]
 
 
-def test_listar_empleados_skip_negativo():
+def test_listar_empleados_skip_negativo(client):
     """Prueba rechazo de skip negativo"""
     response = client.get(
         "/api/empleados/?skip=-5",
@@ -166,7 +159,7 @@ def test_listar_empleados_skip_negativo():
     assert response.status_code in [400, 422, 401]
 
 
-def test_obtener_empleado_por_email():
+def test_obtener_empleado_por_email(client):
     """Prueba obtener empleado por email"""
     response = client.get(
         "/api/empleados/por-email/employee@example.com",
@@ -176,7 +169,7 @@ def test_obtener_empleado_por_email():
     assert response.status_code in [200, 404, 401]
 
 
-def test_obtener_empleado_email_invalido():
+def test_obtener_empleado_email_invalido(client):
     """Prueba obtener empleado con email inválido"""
     response = client.get(
         "/api/empleados/por-email/email-invalido",
@@ -186,7 +179,7 @@ def test_obtener_empleado_email_invalido():
     assert response.status_code in [400, 422, 404, 401]
 
 
-def test_get_balance_mes_especifico():
+def test_get_balance_mes_especifico(client):
     """Prueba obtener balance para mes específico"""
     response = client.get(
         "/api/empleados/balance/2025/12",  # Diciembre 2025
@@ -195,7 +188,7 @@ def test_get_balance_mes_especifico():
     assert response.status_code in [200, 401, 404]
 
 
-def test_get_balance_mes_invalido():
+def test_get_balance_mes_invalido(client):
     """Prueba rechazo de mes inválido"""
     response = client.get(
         "/api/empleados/balance/2025/13",  # Mes no existe
@@ -205,7 +198,7 @@ def test_get_balance_mes_invalido():
     assert response.status_code in [400, 422, 401]
 
 
-def test_get_balance_mes_negativo():
+def test_get_balance_mes_negativo(client):
     """Prueba rechazo de mes negativo"""
     response = client.get(
         "/api/empleados/balance/2025/0",

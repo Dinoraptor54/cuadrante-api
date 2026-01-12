@@ -1,9 +1,9 @@
 # 🚨 API Cuadrante Vigilantes
 
-API REST para acceso móvil a cuadrantes de turnos, permutas y datos de empleados.
+API REST para acceso móvil a cuadrantes de turnos, permutas, vacaciones y datos de empleados.
 
-**Estado**: ✅ 90% Completado | Listo para Producción  
-**Versión**: 2.0.0 | Fecha: 8 de Diciembre 2025
+**Estado**: ✅ 95% Completado | Listo para Producción
+**Versión**: 2.5.0 | Fecha: 5 de Enero 2026
 
 ---
 
@@ -40,10 +40,13 @@ pip install -r requirements.txt
 # Copiar template
 cp .env.example .env
 
-# Editar .env
+# Editar .env con tus datos (SMTP es opcional)
 ENVIRONMENT=development
 DATABASE_URL=sqlite:///./cuadrante.db
 SECRET_KEY=dev-key-change-in-production
+# SMTP_HOST=smtp.example.com
+# SMTP_USER=user@example.com
+# SMTP_PASSWORD=secret
 ```
 
 ### 3. Inicializar Base de Datos
@@ -62,9 +65,6 @@ python init_db.py health
 # Con auto-reload
 python -m uvicorn main:app --reload
 
-# O directamente
-python main.py
-
 # Documentación
 # Swagger: http://localhost:8000/docs
 # ReDoc: http://localhost:8000/redoc
@@ -75,12 +75,6 @@ python main.py
 ```bash
 # Todos los tests
 pytest tests/ -v
-
-# Con cobertura
-pytest tests/ --cov
-
-# Específico
-pytest tests/test_auth.py -v
 ```
 
 ---
@@ -111,6 +105,12 @@ POST   /api/permutas/{id}/aceptar   Aceptar permuta
 POST   /api/permutas/{id}/rechazar  Rechazar permuta
 ```
 
+### 🏖️ Vacaciones (NUEVO)
+```
+POST   /api/vacaciones/solicitar      Solicitar vacaciones
+GET    /api/vacaciones/mis-solicitudes  Ver mis solicitudes
+```
+
 ### 👥 Empleados
 ```
 GET    /api/empleados/              Listar empleados
@@ -128,48 +128,34 @@ POST   /api/sync/full               Sincronizar todos los datos
 
 ## ✨ Características Implementadas
 
+### ✅ Notificaciones por Email (NUEVO)
+- Envío de emails para eventos (solicitud de permuta, vacaciones).
+- Modo de simulación: si no se configura SMTP, las notificaciones se muestran en el log.
+
+### ✅ Frontend Integrado (PWA) (NUEVO)
+- La API sirve una aplicación web desde el directorio `/static`.
+- Permite un despliegue unificado de frontend y backend.
+
 ### ✅ Validaciones Robustas
-```python
-from utils.validators import DateValidator, EmailValidator
-
-# Validar año
-DateValidator.validate_year(2025)
-
-# Validar email
-EmailValidator.validate_email("user@example.com")
-```
+- Clases dedicadas para validar fechas, emails, turnos, etc.
+- Excepciones personalizadas para errores de validación.
 
 ### ✅ Logging Estructurado
-```python
-from utils.logging_config import log_info, log_permuta_creada
-
-log_info("Usuario conectado")
-log_permuta_creada("u1@ex.com", "u2@ex.com", "2025-12-01", "2025-12-02")
-```
+- Sistema de logging centralizado con niveles y rotación de archivos.
+- Funciones específicas para eventos de negocio.
 
 ### ✅ Rate Limiting
-- 100 solicitudes por 60 segundos (configurable)
-- Headers estándar: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
-- Protección contra abuso
+- Middleware para limitar el número de solicitudes por IP.
+- Protección contra ataques de fuerza bruta.
 
 ### ✅ Manejo Global de Errores
-- Excepciones personalizadas con logging
-- Respuestas JSON consistentes
-- Error tracking con IDs únicos
+- Captura centralizada de excepciones para respuestas de error consistentes.
 
 ### ✅ Configuración Centralizada
-```python
-from config import settings
+- Uso de `pydantic-settings` para gestionar la configuración desde `.env`.
 
-print(settings.DATABASE_URL)
-print(settings.ALLOWED_ORIGINS)
-print(settings.LOG_LEVEL)
-```
-
-### ✅ 44 Tests Automáticos
-- 18 tests de autenticación
-- 11 tests de permutas
-- 15 tests de empleados
+### ✅ 44+ Tests Automáticos
+- Cobertura para autenticación, permutas, empleados y más.
 
 ---
 
@@ -177,14 +163,17 @@ print(settings.LOG_LEVEL)
 
 ```
 cuadrante_api/
-├── main.py                    # Aplicación principal
+├── main.py                    # Aplicación principal y servidor de PWA
 ├── config.py                  # Configuración centralizada
-├── init_db.py                 # Script de inicialización
 ├── requirements.txt           # Dependencias
 ├── .env.example               # Template de configuración
 │
+├── static/                    # Frontend (PWA)
+│   ├── index.html
+│   └── ...
+│
 ├── models/
-│   ├── database.py           # Conexión a BD
+│   ├── database.py           # Conexión a BD (get_db)
 │   └── sql_models.py         # Modelos SQLAlchemy
 │
 ├── routers/
@@ -192,6 +181,7 @@ cuadrante_api/
 │   ├── turnos.py             # Turnos
 │   ├── permutas.py           # Permutas
 │   ├── empleados.py          # Empleados
+│   ├── vacaciones.py         # (NUEVO) Gestión de vacaciones
 │   └── sync.py               # Sincronización
 │
 ├── services/
@@ -199,193 +189,47 @@ cuadrante_api/
 │   ├── turnos_service.py
 │   ├── permutas_service.py
 │   ├── empleados_service.py
+│   ├── vacaciones_service.py   # (NUEVO) Lógica de vacaciones
+│   ├── notification_service.py # (NUEVO) Envío de emails
 │   └── sync_service.py
 │
 ├── utils/
-│   ├── validators.py         # Validaciones robustas
-│   ├── logging_config.py     # Sistema de logging
+│   ├── validators.py         # Validaciones
+│   ├── logging_config.py     # Logging
 │   ├── rate_limiting.py      # Rate limiting
 │   ├── error_handlers.py     # Manejo de errores
 │   └── security.py           # Seguridad (JWT, etc)
 │
-├── tests/
-│   ├── test_auth.py          # 18 tests
-│   ├── test_permutas.py      # 11 tests
-│   ├── test_empleados.py     # 15 tests
-│   └── conftest.py           # Configuración pytest
-│
-└── Documentación/
-    ├── README.md              # Este archivo
-    ├── SECURITY.md            # Guía de seguridad
-    ├── DEPLOYMENT.md          # Despliegue en Railway
-    ├── RESUMEN_FINAL.md       # Resumen de cambios
-    └── EJEMPLO_INTEGRACION.py # Ejemplos de uso
+└── tests/
+    ├── test_auth.py
+    ├── test_permutas.py
+    ├── test_empleados.py
+    └── conftest.py
 ```
 
 ---
 
 ## 🔐 Seguridad
 
-### JWT Tokens
-- Expiración: 24 horas (configurable)
-- Algoritmo: HS256
-- Validación en cada request
-
-### Contraseñas
-- Hashing con bcrypt
-- Requisitos: 8+ caracteres, mayúsculas, minúsculas, números
-
-### CORS
-- Orígenes desde variables de entorno
-- Sin "*" en producción
-- Métodos HTTP restringidos
-
-### Rate Limiting
-- 100 req/60s por IP
-- Protección contra fuerza bruta
-- Headers informativos
-
-Ver **SECURITY.md** para detalles completos.
+Ver **SECURITY.md** para detalles completos sobre JWT, hashing de contraseñas, CORS y más.
 
 ---
 
 ## 🚀 Despliegue en Railway
 
-### Pasos Rápidos
-1. Crear cuenta en [railway.app](https://railway.app)
-2. Conectar GitHub
-3. Crear proyecto desde repositorio
-4. Configurar variables de entorno
-5. Crear servicio PostgreSQL
-6. Deploy automático
-
-Ver **DEPLOYMENT.md** para instrucciones detalladas.
-
-### Variables Críticas en Producción
-```env
-ENVIRONMENT=production
-SECRET_KEY=<openssl rand -hex 32>
-DATABASE_URL=postgresql://...
-ALLOWED_ORIGINS=https://app.tudominio.com
-LOG_LEVEL=INFO
-```
+Ver **DEPLOYMENT.md** para instrucciones detalladas sobre el despliegue y la configuración de PostgreSQL.
 
 ---
 
 ## 🧪 Testing
 
-### Ejecutar Todos los Tests
 ```bash
+# Ejecutar todos los tests
 pytest tests/ -v
-```
 
-### Con Cobertura
-```bash
+# Ver cobertura de tests
 pytest tests/ --cov=. --cov-report=html
 ```
-
-### Tests Específicos
-```bash
-pytest tests/test_auth.py::test_login_exitoso -v
-pytest tests/test_permutas.py -v
-pytest tests/test_empleados.py -v
-```
-
-### Coverage Target
-- Mínimo: 70%
-- Actual: Pendiente (44 tests implementados)
-
----
-
-## 📝 Ejemplos de Uso
-
-### Validar Datos
-```python
-from utils.validators import DateValidator, EmailValidator
-
-try:
-    year = DateValidator.validate_year(2025)
-    email = EmailValidator.validate_email("user@example.com")
-except ValidationError as e:
-    print(f"Error: {e.detail}")
-```
-
-### Logging
-```python
-from utils.logging_config import log_login, log_error
-
-log_login("user@example.com", success=True)
-log_error("Algo salió mal", error=exception)
-```
-
-### Usar la API
-```python
-import requests
-
-headers = {"Authorization": "Bearer <token>"}
-
-# Obtener mis turnos
-response = requests.get(
-    "http://localhost:8000/api/turnos/mis-turnos/2025/12",
-    headers=headers
-)
-print(response.json())
-```
-
-Ver **EJEMPLO_INTEGRACION.py** para más ejemplos.
-
----
-
-## 🐛 Troubleshooting
-
-### Error: "ModuleNotFoundError"
-```bash
-# Ejecutar desde raíz del proyecto
-cd cuadrante_api
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-```
-
-### Error: "Error al conectar a BD"
-```bash
-# Verificar DATABASE_URL
-echo $DATABASE_URL
-
-# Reiniciar BD
-python init_db.py reset
-python init_db.py init
-```
-
-### Error: "CORS Blocked"
-1. Verificar `ALLOWED_ORIGINS` en .env
-2. Incluir dominio de tu app
-3. En desarrollo: `http://localhost:3000`
-
-Ver **DEPLOYMENT.md** para más soluciones.
-
----
-
-## 📊 Progreso del Proyecto
-
-```
-✅ Fase 1: Funcionalidad Básica    - 100%
-✅ Fase 2: Mejoras Técnicas        - 100%
-🚀 Fase 3: Producción              - 90%
-   ✅ Validaciones
-   ✅ Logging
-   ✅ Rate limiting
-   ✅ Error handling
-   ✅ Config centralizada
-   ⏳ Despliegue en Railway (manual)
-```
-
----
-
-## 📞 Soporte
-
-- 📖 Consultar SECURITY.md para seguridad
-- 🚀 Consultar DEPLOYMENT.md para despliegue
-- 💡 Consultar EJEMPLO_INTEGRACION.py para ejemplos
-- 🐛 Revisar logs: `python main.py 2>&1 | grep ERROR`
 
 ---
 
@@ -397,106 +241,18 @@ Privado - Proyecto Dino
 
 ## ✨ Últimas Actualizaciones
 
+**5 de Enero 2026**
+- ✅ **Módulo de Vacaciones**: Añadida funcionalidad para solicitar y ver vacaciones.
+- ✅ **Servicio de Notificaciones**: Implementado sistema de notificaciones por email para eventos clave.
+- ✅ **Frontend Integrado**: La API ahora sirve una PWA desde el directorio `static`.
+- ✅ **Manejo de Errores Global**: Añadido un sistema centralizado para gestionar excepciones.
+- ✅ **Health Check**: Incluido endpoint `/health` para monitoreo en producción.
+- ✅ **Soporte para PostgreSQL**: Añadida dependencia `psycopg2-binary` para producción.
+
 **8 de Diciembre 2025**
 - ✅ Validaciones robustas implementadas
 - ✅ Logging estructurado completado
 - ✅ Rate limiting activado
-- ✅ 44 tests nuevos
-- ✅ Documentación SECURITY.md
-- ✅ Documentación DEPLOYMENT.md mejorada
-- ✅ Manejador global de errores
-- ✅ Ejemplos de integración
+- ✅ 44 tests iniciales creados
 
-**Status**: Listo para despliegue en Railway
-
----
-
-**Generado por**: GitHub Copilot (Claude Haiku 4.5)  
-**Versión API**: 2.0.0  
-**Última actualización**: 8 de Diciembre 2025
-
-### Permutas
-- `POST /api/permutas/solicitar` - Solicitar permuta
-- `GET /api/permutas/mis-solicitudes` - Mis permutas
-- `PUT /api/permutas/{id}/aceptar` - Aceptar permuta
-
-### Empleados
-- `GET /api/empleados/perfil` - Perfil del empleado
-- `GET /api/empleados/balance/{anio}` - Balance de horas
-
-## 🔐 Autenticación
-
-La API usa tokens JWT. Para autenticarte:
-
-1. **Login:**
-```bash
-curl -X POST http://localhost:8000/api/auth/login \
-  -d "username=admin@example.com&password=admin123"
-```
-
-2. **Usar token en peticiones:**
-```bash
-curl http://localhost:8000/api/turnos/mis-turnos/2025/12 \
-  -H "Authorization: Bearer TU_TOKEN_AQUI"
-```
-
-## 🧪 Usuario de Prueba
-
-- Email: `admin@example.com`
-- Password: `admin123`
-
-## 📁 Estructura del Proyecto
-
-```
-cuadrante_api/
-├── main.py              # Punto de entrada
-├── requirements.txt     # Dependencias
-├── .env                 # Configuración (no subir a Git)
-├── routers/            # Endpoints organizados
-│   ├── auth.py         # Autenticación
-│   ├── turnos.py       # Turnos
-│   ├── permutas.py     # Permutas
-│   └── empleados.py    # Empleados
-├── models/             # Modelos de base de datos
-├── services/           # Lógica de negocio
-└── utils/              # Utilidades
-```
-
-## 🌐 Despliegue en Railway
-
-### 1. Crear cuenta en Railway.app
-
-### 2. Conectar repositorio GitHub
-
-### 3. Railway detecta FastAPI automáticamente
-
-### 4. Configurar variables de entorno en Railway
-
-### 5. ¡Listo! URL: `https://tu-proyecto.railway.app`
-
-## 🔧 Desarrollo
-
-### Ejecutar con auto-reload
-```bash
-uvicorn main:app --reload
-```
-
-### Probar endpoints
-Usa Thunder Client (VS Code) o Postman
-
-## 📝 TODO
-
-- [ ] Implementar base de datos PostgreSQL
-- [ ] Añadir más validaciones
-- [ ] Implementar notificaciones push
-- [ ] Tests unitarios
-- [ ] Documentación de API más detallada
-
-## 🤝 Integración con App Desktop
-
-La API lee los datos directamente de los archivos JSON del proyecto desktop.
-Configurar `DESKTOP_DATA_PATH` en `.env` para apuntar a la carpeta `datos_cuadrante`.
-
-## 📞 Soporte
-
-Para dudas o problemas, contactar al administrador del sistema.
+**Status**: Migración a PostgreSQL y nuevas funcionalidades completadas. Listo para despliegue final.

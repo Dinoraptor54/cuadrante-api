@@ -4,14 +4,14 @@ from models.sql_models import Empleado, Turno, ConfiguracionTurno
 
 # --- Datos de prueba ---
 TEST_USER = {
-    "email": "test.user@example.com",
+    "email": "turnos.test@example.com",
     "password": "testpassword",
     "full_name": "Test User",
     "role": "vigilante"
 }
 TEST_EMPLEADO = {
     "nombre_completo": "Test User",
-    "email": "test.user@example.com"
+    "email": "turnos.test@example.com"
 }
 
 # --- Tests ---

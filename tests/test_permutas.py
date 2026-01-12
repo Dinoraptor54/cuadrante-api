@@ -13,17 +13,10 @@ from models.database import Base, SessionLocal, engine
 from models.sql_models import Empleado, User, Permuta
 from main import app
 
-client = TestClient(app)
 
 
-@pytest.fixture
-def db_session():
-    """Crea una sesión de BD de prueba"""
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
+
+
 
 
 @pytest.fixture
@@ -60,7 +53,7 @@ def test_usuarios(db_session: Session):
     return usuario1, usuario2
 
 
-def test_solicitar_permuta_exitosa(test_usuarios):
+def test_solicitar_permuta_exitosa(client, test_usuarios):
     """Prueba solicitud de permuta exitosa"""
     usuario1, usuario2 = test_usuarios
     
@@ -81,7 +74,7 @@ def test_solicitar_permuta_exitosa(test_usuarios):
     assert response.status_code in [200, 201, 401, 422]
 
 
-def test_solicitar_permuta_sin_motivo(test_usuarios):
+def test_solicitar_permuta_sin_motivo(client, test_usuarios):
     """Prueba permuta sin motivo (opcional)"""
     usuario1, usuario2 = test_usuarios
     
@@ -100,7 +93,7 @@ def test_solicitar_permuta_sin_motivo(test_usuarios):
     assert response.status_code in [200, 201, 401, 422]
 
 
-def test_solicitar_permuta_fechas_iguales(test_usuarios):
+def test_solicitar_permuta_fechas_iguales(client, test_usuarios):
     """Prueba rechazo de permuta con fechas iguales"""
     usuario1, usuario2 = test_usuarios
     
@@ -120,7 +113,7 @@ def test_solicitar_permuta_fechas_iguales(test_usuarios):
     assert response.status_code in [400, 422]
 
 
-def test_solicitar_permuta_fecha_pasada(test_usuarios):
+def test_solicitar_permuta_fecha_pasada(client, test_usuarios):
     """Prueba rechazo de permuta en fecha pasada"""
     usuario1, usuario2 = test_usuarios
     
@@ -141,7 +134,7 @@ def test_solicitar_permuta_fecha_pasada(test_usuarios):
     assert response.status_code in [400, 422]
 
 
-def test_listar_mis_permutas():
+def test_listar_mis_permutas(client):
     """Prueba listado de mis permutas"""
     response = client.get(
         "/api/permutas/mis-permutas",
@@ -153,7 +146,7 @@ def test_listar_mis_permutas():
         assert isinstance(response.json(), list)
 
 
-def test_aceptar_permuta_no_existe():
+def test_aceptar_permuta_no_existe(client):
     """Prueba aceptar permuta inexistente"""
     response = client.post(
         "/api/permutas/aceptar/999",
@@ -163,7 +156,7 @@ def test_aceptar_permuta_no_existe():
     assert response.status_code in [404, 401]
 
 
-def test_rechazar_permuta_no_existe():
+def test_rechazar_permuta_no_existe(client):
     """Prueba rechazar permuta inexistente"""
     response = client.post(
         "/api/permutas/rechazar/999",
@@ -173,7 +166,7 @@ def test_rechazar_permuta_no_existe():
     assert response.status_code in [404, 401]
 
 
-def test_email_destino_invalido(test_usuarios):
+def test_email_destino_invalido(client, test_usuarios):
     """Prueba validación de email destino"""
     usuario1, usuario2 = test_usuarios
     
@@ -194,7 +187,7 @@ def test_email_destino_invalido(test_usuarios):
     assert response.status_code in [400, 422]
 
 
-def test_formato_fecha_invalido(test_usuarios):
+def test_formato_fecha_invalido(client, test_usuarios):
     """Prueba formato de fecha inválido"""
     usuario1, usuario2 = test_usuarios
     
