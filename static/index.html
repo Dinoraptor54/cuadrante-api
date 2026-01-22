@@ -518,8 +518,9 @@
                 const daysInMonth = new Date(year, month, 0).getDate();
                 const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
                 let userShifts = {};
-                if (scheduleData && scheduleData.cuadrante && employeeName) {
-                    userShifts = scheduleData.cuadrante[employeeName] || {};
+                // API returns {anio, mes, shifts: {day: code}}
+                if (scheduleData && scheduleData.shifts) {
+                    userShifts = scheduleData.shifts;
                 }
                 for (let i = 1; i <= daysInMonth; i++) {
                     const dayCell = document.createElement('div');
@@ -531,7 +532,7 @@
                     dayNum.className = 'day-number';
                     dayNum.textContent = i;
                     dayCell.appendChild(dayNum);
-                    const shiftCode = userShifts[i];
+                    const shiftCode = userShifts[i.toString()];
                     if (shiftCode) {
                         const shiftText = document.createElement('span');
                         shiftText.className = 'shift-text';
