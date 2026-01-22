@@ -18,6 +18,11 @@ Si la API en Render no responde o da errores de conexión a la base de datos des
 1. Entra a [Supabase Dashboard](https://supabase.com/dashboard/projects).
 2. Verás el proyecto en estado **"Paused"**.
 3. Haz clic en **"Restore Project"** o el botón de reactivar.
+
+### ⚠️ Error "Tenant or user not found" (Host Incorrecto)
+Si el proyecto está activo pero recibes este error en los logs:
+- Verifica que el host en `DATABASE_URL` sea **`aws-1-eu-central-1.pooler.supabase.com`**.
+- A veces se configuran como `aws-0`, pero recientemente Supabase ha movido proyectos al cluster `aws-1`.
 4. Espera unos minutos hasta que el icono se ponga verde.
 5. **Render reconectará automáticamente** (o puedes forzar un "Manual Deploy" para acelerarlo).
 

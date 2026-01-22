@@ -140,6 +140,52 @@ async def get_schedule(
         db.close()
 
 
+@app.get("/api/schedule/{year}/{month}/empleado/{empleado_id}")
+async def get_schedule_by_employee(
+    year: int, 
+    month: int,
+    empleado_id: int,
+    current_user: dict = Depends(auth.get_current_user)
+):
+    """
+    Obtiene el cuadrante de turnos para un empleado específico
+    Solo permitido para coordinadores
+    """
+    from models.database import SessionLocal
+    from models.sql_models import Turno, Empleado
+    
+    # Verificar que el usuario sea coordinador
+    if current_user.get("rol") != "coordinador":
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    db = SessionLocal()
+    try:
+        # Verificar que el empleado existe
+        empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+        if not empleado:
+            return {"anio": year, "mes": month, "shifts": {}}
+
+        # Obtener turnos del mes para este empleado
+        turnos = db.query(Turno).filter(
+            Turno.empleado_id == empleado_id,
+            Turno.anio == year,
+            Turno.mes == month
+        ).all()
+        
+        # Formatear como diccionario día -> código
+        shifts = {str(t.dia): t.codigo_turno for t in turnos}
+        
+        return {
+            "anio": year,
+            "mes": month,
+            "empleado_id": empleado_id,
+            "empleado_nombre": empleado.nombre_completo,
+            "shifts": shifts
+        }
+    finally:
+        db.close()
+
+
 @app.get("/health")
 async def health_check():
     """Health check para monitoreo"""

@@ -30,8 +30,8 @@ def check_data(token):
             print(f"ID: {emp.get('id')} - Name: {emp.get('nombre_completo')}")
             
             # 2. Check Schedule for first employee found
-            print(f"  Checking schedule for {emp.get('nombre_completo')} (Nov 2025)...")
-            r_sched = requests.get(f"{API_URL}/api/schedule/2025/11", headers=headers)
+            print(f"  Checking schedule for {emp.get('nombre_completo')} (Jan 2026)...")
+            r_sched = requests.get(f"{API_URL}/api/schedule/2026/1", headers=headers)
             if r_sched.status_code == 200:
                 schedule = r_sched.json()
                 print(f"  Schedule response keys: {schedule.keys()}")

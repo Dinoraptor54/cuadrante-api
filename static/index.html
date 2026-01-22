@@ -680,8 +680,21 @@
             const month = state.currentDate.getMonth() + 1;
             try {
                 const token = auth.getToken();
-                const data = await api.getSchedule(token, year, month);
                 const selectedEmployee = state.allEmployees[state.selectedEmployeeIndex];
+
+                // Use employee-specific endpoint if we have an employee ID
+                let url = `${API_URL}/api/schedule/${year}/${month}`;
+                if (selectedEmployee && selectedEmployee.id) {
+                    url = `${API_URL}/api/schedule/${year}/${month}/empleado/${selectedEmployee.id}`;
+                }
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Error al obtener cuadrante');
+                const data = await response.json();
+
                 ui.renderCalendar(data, selectedEmployee.nombre_completo, year, month);
             } catch (error) {
                 console.error(error);
