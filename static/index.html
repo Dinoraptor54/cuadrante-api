@@ -434,7 +434,7 @@
                 return await response.json();
             },
             async getSchedule(token, year, month) {
-                const response = await fetch(`${API_URL}/schedule/${year}/${month}`, {
+                const response = await fetch(`${API_URL}/api/schedule/${year}/${month}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error('Error al obtener cuadrante');

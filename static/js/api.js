@@ -51,7 +51,7 @@ export const api = {
 
     // Get schedule for a specific month
     async getSchedule(token, year, month) {
-        const response = await fetch(`${API_URL}/schedule/${year}/${month}`, {
+        const response = await fetch(`${API_URL}/api/schedule/${year}/${month}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

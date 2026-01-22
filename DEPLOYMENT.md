@@ -13,6 +13,7 @@
 4. [Base de Datos PostgreSQL](#postgresql)
 5. [Troubleshooting](#troubleshooting)
 6. [Monitoreo](#monitoreo)
+7. [Mantenimiento y Problemas Comunes](MANTENIMIENTO.md) 🚨
 
 ---
 
