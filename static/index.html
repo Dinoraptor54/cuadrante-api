@@ -495,19 +495,13 @@
             renderEmployeeList(employees, selectedIndex) {
                 const list = document.getElementById('employee-list');
                 if (!list) return;
-                list.innerHTML = '';
-                employees.forEach((emp, idx) => {
-                    const div = document.createElement('div');
-                    div.className = 'employee-item';
-                    if (idx === selectedIndex) div.classList.add('active');
-                    div.textContent = emp.nombre_completo;
-                    div.onclick = () => {
-                        if (idx !== selectedIndex && typeof changeEmployee === 'function') {
-                            changeEmployee(idx - selectedIndex);
-                        }
-                    };
-                    list.appendChild(div);
-                });
+                // Show only the selected employee's name
+                const selectedEmployee = employees[selectedIndex];
+                if (selectedEmployee) {
+                    list.textContent = selectedEmployee.nombre_completo;
+                } else {
+                    list.textContent = 'Selecciona un empleado';
+                }
             },
             renderProfile(user) {
                 if (Array.isArray(user) && user.length > 0) user = user[0];
