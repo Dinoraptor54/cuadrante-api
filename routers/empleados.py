@@ -169,7 +169,7 @@ class BalanceMensualResponse(BaseModel):
     balance_horas: float
     dias_trabajados: int
     horas_nocturnas: float
-    dias_festivos: int
+    horas_festivas: float
 
 
 # Endpoint adicional: mi-perfil (alias de /perfil)
@@ -345,11 +345,10 @@ async def get_balance_mensual(
     from routers.turnos import cargar_datos_desktop
     festivos_data = cargar_datos_desktop("festivos.json")
     
-    # Calcular horas trabajadas, nocturnas y festivos
     total_horas = 0
     horas_nocturnas = 0
     dias_trabajados = 0
-    dias_festivos = 0
+    horas_festivas = 0
     
     for turno in turnos:
         if turno.codigo_turno not in ['L', 'V', 'B']:  # No contar libres, vacaciones, bajas
@@ -377,7 +376,7 @@ async def get_balance_mensual(
                 es_fin_de_semana = fecha_dt.weekday() >= 5
                 
                 if es_festivo_json or es_fin_de_semana:
-                    dias_festivos += 1
+                    horas_festivas += horas
             except Exception as e:
                 print(f"Error procesando festivo: {e}")
                 pass  # Si hay error procesando, continuar
@@ -393,5 +392,5 @@ async def get_balance_mensual(
         balance_horas=balance,
         dias_trabajados=dias_trabajados,
         horas_nocturnas=horas_nocturnas,
-        dias_festivos=dias_festivos
+        horas_festivas=horas_festivas
     )

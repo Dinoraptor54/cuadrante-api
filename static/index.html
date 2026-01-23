@@ -439,7 +439,7 @@
                     <div class="summary-card">
                         <div class="summary-icon">🎉</div>
                         <div class="summary-content">
-                            <div class="summary-label">Festivos Trabajados</div>
+                            <div class="summary-label">Horas Festivas</div>
                             <div class="summary-value" id="holiday-days">--</div>
                         </div>
                     </div>
@@ -628,7 +628,7 @@
                 if (balanceData && totalHoursEl && nightHoursEl && holidayDaysEl) {
                     totalHoursEl.textContent = `${balanceData.total_horas_trabajadas.toFixed(1)}h`;
                     nightHoursEl.textContent = `${balanceData.horas_nocturnas.toFixed(1)}h`;
-                    holidayDaysEl.textContent = `${balanceData.dias_festivos} días`;
+                    holidayDaysEl.textContent = `${balanceData.horas_festivas.toFixed(1)}h`;
                 } else {
                     if (totalHoursEl) totalHoursEl.textContent = '--';
                     if (nightHoursEl) nightHoursEl.textContent = '--';
