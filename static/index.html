@@ -300,6 +300,55 @@
             font-size: 1.1rem;
             color: var(--primary);
         }
+
+        /* Monthly Summary Cards */
+        .monthly-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-card {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .summary-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .summary-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1;
+        }
     </style>
 </head>
 
@@ -370,6 +419,32 @@
                     <span id="current-month-display">Buscando fecha...</span>
                     <button id="next-month">▶</button>
                 </div>
+
+                <!-- Resumen Mensual -->
+                <div id="monthly-summary" class="monthly-summary">
+                    <div class="summary-card">
+                        <div class="summary-icon">⏰</div>
+                        <div class="summary-content">
+                            <div class="summary-label">Horas Totales</div>
+                            <div class="summary-value" id="total-hours">--</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">🌙</div>
+                        <div class="summary-content">
+                            <div class="summary-label">Horas Nocturnas</div>
+                            <div class="summary-value" id="night-hours">--</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">🎉</div>
+                        <div class="summary-content">
+                            <div class="summary-label">Festivos Trabajados</div>
+                            <div class="summary-value" id="holiday-days">--</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="calendar-grid" class="calendar-grid"></div>
             </div>
         </section>
@@ -544,6 +619,21 @@
             },
             showError(msg) {
                 document.getElementById('login-error').textContent = msg;
+            },
+            renderMonthlySummary(balanceData) {
+                const totalHoursEl = document.getElementById('total-hours');
+                const nightHoursEl = document.getElementById('night-hours');
+                const holidayDaysEl = document.getElementById('holiday-days');
+
+                if (balanceData && totalHoursEl && nightHoursEl && holidayDaysEl) {
+                    totalHoursEl.textContent = `${balanceData.total_horas_trabajadas.toFixed(1)}h`;
+                    nightHoursEl.textContent = `${balanceData.horas_nocturnas.toFixed(1)}h`;
+                    holidayDaysEl.textContent = `${balanceData.dias_festivos} días`;
+                } else {
+                    if (totalHoursEl) totalHoursEl.textContent = '--';
+                    if (nightHoursEl) nightHoursEl.textContent = '--';
+                    if (holidayDaysEl) holidayDaysEl.textContent = '--';
+                }
             }
         };
 
@@ -694,9 +784,28 @@
                 const data = await response.json();
 
                 ui.renderCalendar(data, selectedEmployee.nombre_completo, year, month);
+
+                // Obtener balance mensual para mostrar resumen
+                try {
+                    const balanceUrl = `${API_URL}/api/empleados/balance/${year}/${month}`;
+                    const balanceResponse = await fetch(balanceUrl, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (balanceResponse.ok) {
+                        const balanceData = await balanceResponse.json();
+                        ui.renderMonthlySummary(balanceData);
+                    } else {
+                        ui.renderMonthlySummary(null);
+                    }
+                } catch (balanceError) {
+                    console.error('Error al obtener balance:', balanceError);
+                    ui.renderMonthlySummary(null);
+                }
             } catch (error) {
                 console.error(error);
                 ui.renderCalendar(null, null, year, month);
+                ui.renderMonthlySummary(null);
             }
         }
 

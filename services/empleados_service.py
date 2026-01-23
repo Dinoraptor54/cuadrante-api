@@ -19,6 +19,22 @@ def get_horas_turno(codigo: str) -> float:
     # Nota: M y T no aparecen en turnos.json, se asumen 0 o se eliminan.
     return mapping.get(codigo, 0.0)
 
+def get_horas_nocturnas(codigo: str) -> float:
+    """
+    Devuelve las horas nocturnas para un código de turno.
+    Según turnos.json, solo el turno N tiene horas nocturnas (8h).
+    """
+    mapping = {
+        "N": 8.0,  # Turno noche: 8 horas nocturnas (de 19:00 a 07:00)
+        "D": 0.0,  # Turno día: sin horas nocturnas
+        "V": 0.0,  # Vacaciones
+        "L": 0.0,  # Libre
+        "B": 0.0,  # Baja
+        "F": 0.0,  # Formación
+        "R": 0.0   # Rotativo
+    }
+    return mapping.get(codigo, 0.0)
+
 def calcular_balance_anual(db: Session, empleado_id: int, anio: int) -> Dict[str, Any]:
     """
     Calcula el balance de horas para un empleado en un año específico.
