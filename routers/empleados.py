@@ -325,8 +325,8 @@ async def get_balance_mensual(
     
     turnos = db.query(sql_models.Turno).filter(
         sql_models.Turno.empleado_id == empleado.id,
-        sql_models.Turno.fecha >= str(primer_dia),
-        sql_models.Turno.fecha <= str(ultimo_dia)
+        sql_models.Turno.anio == anio,
+        sql_models.Turno.mes == mes
     ).all()
     
     # Cargar festivos desde el archivo JSON
@@ -349,20 +349,18 @@ async def get_balance_mensual(
             
             # Verificar si es festivo
             try:
-                fecha_turno = date.fromisoformat(turno.fecha) if isinstance(turno.fecha, str) else turno.fecha
-                fecha_str = fecha_turno.strftime("%Y-%m-%d")
+                anio_str = str(turno.anio)
+                mes_str = str(turno.mes)
+                dia_str = str(turno.dia)
                 
-                # Buscar en festivos nacionales, comunidad y locales
-                festivos_nacionales = festivos_data.get("nacional", {})
-                festivos_comunidad = festivos_data.get("comunidad", {})
-                festivos_locales = festivos_data.get("local", {})
-                
-                if (fecha_str in festivos_nacionales or 
-                    fecha_str in festivos_comunidad or 
-                    fecha_str in festivos_locales):
-                    dias_festivos += 1
-            except:
-                pass  # Si hay error parseando fecha, continuar
+                if anio_str in festivos_data and mes_str in festivos_data[anio_str]:
+                    # Los días en el JSON son una lista de strings
+                    dias_festivos_mes = festivos_data[anio_str][mes_str]
+                    if dia_str in [str(d) for d in dias_festivos_mes]:
+                        dias_festivos += 1
+            except Exception as e:
+                print(f"Error procesando festivo: {e}")
+                pass  # Si hay error procesando, continuar
     
     horas_convenio_mes = 147.3  # Aproximado mensual
     balance = total_horas - horas_convenio_mes
