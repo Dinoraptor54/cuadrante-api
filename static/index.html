@@ -787,7 +787,11 @@
 
                 // Obtener balance mensual para mostrar resumen
                 try {
-                    const balanceUrl = `${API_URL}/api/empleados/balance/${year}/${month}`;
+                    let balanceUrl = `${API_URL}/api/empleados/balance/${year}/${month}`;
+                    if (selectedEmployee && selectedEmployee.id) {
+                        balanceUrl += `?id_empleado=${selectedEmployee.id}`;
+                    }
+
                     const balanceResponse = await fetch(balanceUrl, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });

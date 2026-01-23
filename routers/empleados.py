@@ -96,11 +96,14 @@ class BalanceResponse(BaseModel):
 @router.get("/balance/{anio}", response_model=BalanceResponse)
 async def get_balance_anual(
     anio: int,
+    id_empleado: Optional[int] = None,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Obtiene el balance de horas del año para el usuario actual
+    Obtiene el balance de horas del año.
+    Si se proporciona id_empleado y el usuario es coordinador, devuelve el de ese empleado.
+    De lo contrario, devuelve el del usuario actual.
     """
     # Validar año
     from utils.validators import DateValidator
@@ -110,30 +113,30 @@ async def get_balance_anual(
     except ValidationError as e:
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail=str(e))
-    # 1. Obtener usuario de BD para tener su ID
-    from services import auth_service
-    user_db = auth_service.get_user_by_email(db, current_user['email'])
-    if not user_db:
-         # Fallback si por alguna razón extraña no está en BD pero tiene token
-         # (Ej: usuario borrado mientras tenía token válido)
-        return BalanceResponse(
-            anio=anio,
-            total_horas_trabajadas=0,
-            horas_convenio=1768,
-            balance_horas=0,
-            dias_trabajados=0,
-            dias_vacaciones=0,
-            dias_baja=0
-        )
+
+    # Determinar qué empleado consultar
+    if id_empleado and current_user.get('role') == 'coordinador':
+        empleado = db.query(sql_models.Empleado).filter(sql_models.Empleado.id == id_empleado).first()
+    else:
+        # 1. Obtener usuario de BD para tener su ID
+        from services import auth_service
+        user_db = auth_service.get_user_by_email(db, current_user['email'])
+        if not user_db:
+             # Fallback si por alguna razón extraña no está en BD pero tiene token
+            return BalanceResponse(
+                anio=anio,
+                total_horas_trabajadas=0,
+                horas_convenio=1768,
+                balance_horas=0,
+                dias_trabajados=0,
+                dias_vacaciones=0,
+                dias_baja=0
+            )
         
-    # TODO: Asumimos que el User se mapea a un Empleado por string matching o relación directa?
-    # En sql_models.py, User y Empleado son tablas separadas.
-    # El User tiene 'full_name' y Empleado 'nombre_completo'.
-    # Deberíamos buscar el Empleado asociado al User.
-    
-    empleado = db.query(sql_models.Empleado).filter(
-        sql_models.Empleado.nombre_completo == user_db.full_name
-    ).first()
+        # Buscar el Empleado asociado al User
+        empleado = db.query(sql_models.Empleado).filter(
+            sql_models.Empleado.nombre_completo == user_db.full_name
+        ).first()
     
     if not empleado:
          return BalanceResponse(
@@ -264,11 +267,14 @@ async def actualizar_perfil(
 async def get_balance_mensual(
     anio: int,
     mes: int,
+    id_empleado: Optional[int] = None,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Obtiene el balance de horas de un mes específico para el usuario actual
+    Obtiene el balance de horas de un mes específico.
+    Si se proporciona id_empleado y el usuario es coordinador, devuelve el de ese empleado.
+    De lo contrario, devuelve el del usuario actual.
     """
     from fastapi import HTTPException
     from services import auth_service
@@ -286,22 +292,28 @@ async def get_balance_mensual(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-    # Obtener usuario de BD
-    user_db = auth_service.get_user_by_email(db, current_user['email'])
-    if not user_db:
-        return BalanceMensualResponse(
-            anio=anio,
-            mes=mes,
-            total_horas_trabajadas=0,
-            horas_convenio=147.3,  # Aproximado mensual (1768/12)
-            balance_horas=0,
-            dias_trabajados=0
-        )
-    
-    # Buscar empleado asociado
-    empleado = db.query(sql_models.Empleado).filter(
-        sql_models.Empleado.nombre_completo == user_db.full_name
-    ).first()
+    # Determinar qué empleado consultar
+    if id_empleado and current_user.get('role') == 'coordinador':
+        empleado = db.query(sql_models.Empleado).filter(sql_models.Empleado.id == id_empleado).first()
+    else:
+        # Obtener usuario de BD
+        user_db = auth_service.get_user_by_email(db, current_user['email'])
+        if not user_db:
+            return BalanceMensualResponse(
+                anio=anio,
+                mes=mes,
+                total_horas_trabajadas=0,
+                horas_convenio=147.3,  # Aproximado mensual (1768/12)
+                balance_horas=0,
+                dias_trabajados=0,
+                horas_nocturnas=0,
+                dias_festivos=0
+            )
+        
+        # Buscar empleado asociado
+        empleado = db.query(sql_models.Empleado).filter(
+            sql_models.Empleado.nombre_completo == user_db.full_name
+        ).first()
     
     if not empleado:
         return BalanceMensualResponse(
