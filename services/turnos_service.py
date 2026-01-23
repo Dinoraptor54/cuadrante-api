@@ -48,7 +48,7 @@ def get_proximos_turnos_empleado(db: Session, empleado_id: int, dias: int) -> Li
     for i in range(dias + 1):
         fecha_actual = hoy + timedelta(days=i)
         
-        # Comprobar si es festivo
+        # Comprobar si es festivo o fin de semana
         anio_str = str(fecha_actual.year)
         mes_str = str(fecha_actual.month)
         dia_str = str(fecha_actual.day)
@@ -58,6 +58,10 @@ def get_proximos_turnos_empleado(db: Session, empleado_id: int, dias: int) -> Li
             dias_festivos_mes = festivos_data[anio_str][mes_str]
             if dia_str in [str(d) for d in dias_festivos_mes]:
                 es_festivo = True
+        
+        # También fin de semana
+        if fecha_actual.weekday() >= 5:
+            es_festivo = True
         
         turno_en_fecha = next((t for t in turnos_db if t.anio == fecha_actual.year and t.mes == fecha_actual.month and t.dia == fecha_actual.day), None)
 

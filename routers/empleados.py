@@ -359,17 +359,25 @@ async def get_balance_mensual(
             horas_nocturnas += horas_noct
             dias_trabajados += 1
             
-            # Verificar si es festivo
+            # Verificar si es festivo o fin de semana
             try:
                 anio_str = str(turno.anio)
                 mes_str = str(turno.mes)
                 dia_str = str(turno.dia)
                 
+                es_festivo_json = False
                 if anio_str in festivos_data and mes_str in festivos_data[anio_str]:
                     # Los días en el JSON son una lista de strings
                     dias_festivos_mes = festivos_data[anio_str][mes_str]
                     if dia_str in [str(d) for d in dias_festivos_mes]:
-                        dias_festivos += 1
+                        es_festivo_json = True
+                
+                # Verificar si es fin de semana (Sábado=5, Domingo=6)
+                fecha_dt = date(turno.anio, turno.mes, turno.dia)
+                es_fin_de_semana = fecha_dt.weekday() >= 5
+                
+                if es_festivo_json or es_fin_de_semana:
+                    dias_festivos += 1
             except Exception as e:
                 print(f"Error procesando festivo: {e}")
                 pass  # Si hay error procesando, continuar
