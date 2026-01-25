@@ -15,7 +15,7 @@ from models.sql_models import Empleado, Turno, User
 from utils.security import get_password_hash
 
 # Rutas a los datos reales
-DATOS_DIR = Path(r'c:\mis proyectos dino\baul de proyectos\proyectos con gemini\proyecto en marcha\datos_cuadrante')
+DATOS_DIR = Path(r'c:\mis proyectos dino\cuadrante_desktop\datos_cuadrante')
 EMPLEADOS_JSON = DATOS_DIR / 'empleados.json'
 CUADRANTES_JSON = DATOS_DIR / 'cuadrantes.json'
 

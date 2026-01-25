@@ -341,45 +341,17 @@ async def get_balance_mensual(
         sql_models.Turno.mes == mes
     ).all()
     
-    # Cargar festivos desde el archivo JSON
-    from routers.turnos import cargar_datos_desktop
-    festivos_data = cargar_datos_desktop("festivos.json")
-    
     total_horas = 0
     horas_nocturnas = 0
     dias_trabajados = 0
     horas_festivas = 0
     
     for turno in turnos:
-        if turno.codigo_turno not in ['L', 'V', 'B']:  # No contar libres, vacaciones, bajas
-            horas = empleados_service.get_horas_turno(turno.codigo_turno)
-            horas_noct = empleados_service.get_horas_nocturnas(turno.codigo_turno)
-            total_horas += horas
-            horas_nocturnas += horas_noct
+        total_horas += turno.horas_trabajadas
+        horas_nocturnas += turno.horas_nocturnas
+        horas_festivas += turno.horas_festivas
+        if turno.horas_trabajadas > 0:
             dias_trabajados += 1
-            
-            # Verificar si es festivo o fin de semana
-            try:
-                anio_str = str(turno.anio)
-                mes_str = str(turno.mes)
-                dia_str = str(turno.dia)
-                
-                es_festivo_json = False
-                if anio_str in festivos_data and mes_str in festivos_data[anio_str]:
-                    # Los días en el JSON son una lista de strings
-                    dias_festivos_mes = festivos_data[anio_str][mes_str]
-                    if dia_str in [str(d) for d in dias_festivos_mes]:
-                        es_festivo_json = True
-                
-                # Verificar si es fin de semana (Sábado=5, Domingo=6)
-                fecha_dt = date(turno.anio, turno.mes, turno.dia)
-                es_fin_de_semana = fecha_dt.weekday() >= 5
-                
-                if es_festivo_json or es_fin_de_semana:
-                    horas_festivas += horas
-            except Exception as e:
-                print(f"Error procesando festivo: {e}")
-                pass  # Si hay error procesando, continuar
     
     horas_convenio_mes = 147.3  # Aproximado mensual
     balance = total_horas - horas_convenio_mes

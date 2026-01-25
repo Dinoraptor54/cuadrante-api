@@ -206,30 +206,54 @@
         .day-cell {
             aspect-ratio: 1;
             background: var(--bg-dark);
-            border-radius: 4px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
+            transition: transform 0.1s, background 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .day-cell:hover {
+            background: #1e1e2d;
+            transform: scale(1.05);
+            z-index: 2;
         }
 
         .day-number {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             position: absolute;
-            top: 2px;
-            left: 4px;
+            top: 4px;
+            left: 6px;
         }
 
         .weekend {
-            background: #1e1e24;
-            /* Darker for weekend */
+            background: #161b2c;
+            /* Ligeramente diferente para findes */
+        }
+
+        .holiday {
+            border-bottom: 3px solid var(--error);
+        }
+
+        .holiday::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background: var(--error);
+            border-radius: 50%;
         }
 
         .shift-text {
-            font-weight: bold;
-            font-size: 1.1rem;
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .shift-M {
@@ -588,24 +612,59 @@
             renderCalendar(scheduleData, employeeName, year, month) {
                 const grid = document.getElementById('calendar-grid');
                 grid.innerHTML = '';
+
+                // Cabeceras días de la semana (Formato Europeo)
+                const weekDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+                weekDays.forEach(day => {
+                    const header = document.createElement('div');
+                    header.className = 'day-header';
+                    header.textContent = day;
+                    header.style.textAlign = 'center';
+                    header.style.fontWeight = 'bold';
+                    header.style.padding = '5px 0';
+                    header.style.color = 'var(--text-muted)';
+                    header.style.fontSize = '0.7rem';
+                    grid.appendChild(header);
+                });
+
+                const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Dom, 1=Lun...
+                const offset = (firstDay === 0) ? 6 : firstDay - 1; // Ajustar a Lunes=0
                 const daysInMonth = new Date(year, month, 0).getDate();
                 const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
                 let userShifts = {};
-                // API returns {anio, mes, shifts: {day: code}}
                 if (scheduleData && scheduleData.shifts) {
                     userShifts = scheduleData.shifts;
                 }
+
+                // Celdas vacías al inicio
+                for (let i = 0; i < offset; i++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'day-cell empty';
+                    empty.style.opacity = '0.2';
+                    grid.appendChild(empty);
+                }
+
                 for (let i = 1; i <= daysInMonth; i++) {
                     const dayCell = document.createElement('div');
                     dayCell.className = 'day-cell';
+
                     const date = new Date(year, month - 1, i);
                     const dayOfWeek = date.getDay();
+
+                    // Datos del turno
+                    const turnoData = userShifts[i.toString()] || {};
+                    const shiftCode = typeof turnoData === 'object' ? turnoData.codigo : turnoData;
+                    const isHoliday = typeof turnoData === 'object' ? turnoData.es_festivo : false;
+
                     if (dayOfWeek === 0 || dayOfWeek === 6) dayCell.classList.add('weekend');
+                    if (isHoliday) dayCell.classList.add('holiday');
+
                     const dayNum = document.createElement('span');
                     dayNum.className = 'day-number';
                     dayNum.textContent = i;
                     dayCell.appendChild(dayNum);
-                    const shiftCode = userShifts[i.toString()];
+
                     if (shiftCode) {
                         const shiftText = document.createElement('span');
                         shiftText.className = 'shift-text';

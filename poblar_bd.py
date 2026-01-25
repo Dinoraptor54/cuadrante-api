@@ -22,7 +22,8 @@ sql_models.Base.metadata.create_all(bind=engine)
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 # Ruta a los datos del proyecto desktop
-DESKTOP_DATA_PATH = Path("../baul de proyectos/proyectos con gemini/proyecto en marcha/proyecto_modulo_cuadrante/datos_cuadrante")
+# Ruta a los datos del proyecto desktop
+DESKTOP_DATA_PATH = Path(r"c:\mis proyectos dino\cuadrante_desktop\datos_cuadrante")
 
 def cargar_json(archivo: str) -> dict:
     """Carga un archivo JSON desde la carpeta de datos"""

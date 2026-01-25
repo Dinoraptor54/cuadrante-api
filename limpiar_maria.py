@@ -8,7 +8,8 @@ import json
 from pathlib import Path
 
 # Ruta al archivo de cuadrantes
-CUADRANTES_PATH = Path("../baul de proyectos/proyectos con gemini/proyecto en marcha/proyecto_modulo_cuadrante/datos_cuadrante/cuadrantes.json")
+# Ruta al archivo de cuadrantes
+CUADRANTES_PATH = Path(r"c:\mis proyectos dino\cuadrante_desktop\datos_cuadrante\cuadrantes.json")
 
 # Cargar datos
 with open(CUADRANTES_PATH, 'r', encoding='utf-8') as f:

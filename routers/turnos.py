@@ -64,60 +64,79 @@ def cargar_datos_desktop(archivo: str) -> dict:
 async def get_mis_turnos(
     anio: int,
     mes: int,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Obtiene los turnos del usuario actual para un mes específico
     """
-    # Cargar datos
+    # 1. Intentar cargar desde DB primero (fuente de verdad sincronizada)
+    nombre_vigilante = current_user.get("nombre")
+    
+    # Obtener configuración de turnos desde DB
+    from services import empleados_service
+    config_horas = empleados_service.get_horas_config(db)
+    # También necesitamos la leyenda y color que están en ConfiguracionTurno
+    configs_db = {c.codigo: c for c in db.query(ConfiguracionTurno).all()}
+    
+    # Buscar turnos del vigilante en DB
+    empleado = db.query(Empleado).filter(Empleado.nombre_completo == nombre_vigilante).first()
+    
+    if empleado:
+        turnos_db = db.query(TurnoDB).filter(
+            TurnoDB.empleado_id == empleado.id,
+            TurnoDB.anio == anio,
+            TurnoDB.mes == mes
+        ).all()
+        
+        if turnos_db:
+            turnos_lista = []
+            total_horas = 0
+            for t in turnos_db:
+                conf = configs_db.get(t.codigo_turno)
+                
+                turnos_lista.append(Turno(
+                    dia=t.dia,
+                    codigo=t.codigo_turno,
+                    horario=conf.descripcion if conf else "",
+                    es_festivo=t.es_festivo
+                ))
+                total_horas += t.horas_trabajadas
+            
+            turnos_lista.sort(key=lambda x: x.dia)
+            return CalendarioMes(
+                anio=anio,
+                mes=mes,
+                vigilante=nombre_vigilante,
+                turnos=turnos_lista,
+                total_horas=total_horas
+            )
+
+    # 2. Fallback a JSON (solo para desarrollo local si no hay DB)
     cuadrantes = cargar_datos_desktop("cuadrantes.json")
     turnos_config = cargar_datos_desktop("turnos.json")
     
-    # Buscar turnos del vigilante
-    nombre_vigilante = current_user.get("nombre")
     turnos_mes = cuadrantes.get(str(anio), {}).get(str(mes), [])
-    
-    vigilante_data = next(
-        (v for v in turnos_mes if v["nombre"] == nombre_vigilante),
-        None
-    )
+    vigilante_data = next((v for v in turnos_mes if v["nombre"] == nombre_vigilante), None)
     
     if not vigilante_data:
-        return CalendarioMes(
-            anio=anio,
-            mes=mes,
-            vigilante=nombre_vigilante,
-            turnos=[],
-            total_horas=0
-        )
+        return CalendarioMes(anio=anio, mes=mes, vigilante=nombre_vigilante, turnos=[], total_horas=0)
     
-    # Construir lista de turnos
     turnos_lista = []
     total_horas = 0
-    
     for dia_str, codigo_turno in vigilante_data.get("turnos", {}).items():
         turno_info = turnos_config.get(codigo_turno.upper(), {})
         horas = turno_info.get("trabajadas", 0)
-        
         turnos_lista.append(Turno(
             dia=int(dia_str),
             codigo=codigo_turno.upper(),
             horario=turno_info.get("leyenda", ""),
-            es_festivo=False  # TODO: Verificar contra festivos
+            es_festivo=False
         ))
-        
         total_horas += horas
     
-    # Ordenar por día
     turnos_lista.sort(key=lambda x: x.dia)
-    
-    return CalendarioMes(
-        anio=anio,
-        mes=mes,
-        vigilante=nombre_vigilante,
-        turnos=turnos_lista,
-        total_horas=total_horas
-    )
+    return CalendarioMes(anio=anio, mes=mes, vigilante=nombre_vigilante, turnos=turnos_lista, total_horas=total_horas)
 
 
 @router.get("/calendario/{anio}/{mes}")

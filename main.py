@@ -128,8 +128,17 @@ async def get_schedule(
             Turno.mes == month
         ).all()
         
-        # Formatear como diccionario día -> código (como espera el frontend)
-        shifts = {str(t.dia): t.codigo_turno for t in turnos}
+        # Formatear como diccionario día -> objeto detallado
+        shifts = {
+            str(t.dia): {
+                "codigo": t.codigo_turno,
+                "t": t.horas_trabajadas,
+                "n": t.horas_nocturnas,
+                "f": t.horas_festivas,
+                "es_festivo": t.es_festivo
+            } 
+            for t in turnos
+        }
         
         return {
             "anio": year,
@@ -153,6 +162,7 @@ async def get_schedule_by_employee(
     """
     from models.database import SessionLocal
     from models.sql_models import Turno, Empleado
+    from fastapi import HTTPException
     
     # Verificar que el usuario sea coordinador
     if current_user.get("rol") != "coordinador":
@@ -172,8 +182,17 @@ async def get_schedule_by_employee(
             Turno.mes == month
         ).all()
         
-        # Formatear como diccionario día -> código
-        shifts = {str(t.dia): t.codigo_turno for t in turnos}
+        # Formatear como diccionario día -> objeto detallado
+        shifts = {
+            str(t.dia): {
+                "codigo": t.codigo_turno,
+                "t": t.horas_trabajadas,
+                "n": t.horas_nocturnas,
+                "f": t.horas_festivas,
+                "es_festivo": t.es_festivo
+            } 
+            for t in turnos
+        }
         
         return {
             "anio": year,

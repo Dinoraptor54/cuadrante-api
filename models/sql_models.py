@@ -37,6 +37,12 @@ class Turno(Base):
     dia = Column(Integer)
     codigo_turno = Column(String) # N, D, L, etc.
     
+    # Campos de cálculo maestro (enviados desde el escritorio)
+    horas_trabajadas = Column(Float, default=0.0)
+    horas_nocturnas = Column(Float, default=0.0)
+    horas_festivas = Column(Float, default=0.0)
+    es_festivo = Column(Boolean, default=False)
+    
     empleado = relationship("Empleado", back_populates="turnos")
 
 class ConfiguracionTurno(Base):
@@ -46,6 +52,8 @@ class ConfiguracionTurno(Base):
     descripcion = Column(String)
     horario = Column(String) # 19:00-07:00
     color = Column(String)
+    horas_total = Column(Float, default=0.0)
+    horas_nocturnas = Column(Float, default=0.0)
 
 class Permuta(Base):
     __tablename__ = "permutas"
