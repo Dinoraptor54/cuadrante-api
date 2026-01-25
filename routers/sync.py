@@ -18,6 +18,7 @@ class SyncData(BaseModel):
     empleados: Dict[str, Any]
     cuadrantes: Dict[str, Any] # Estructura anidada anio -> mes -> lista vigilantes
     config_turnos: Dict[str, Any]
+    festivos: Optional[Dict[str, Any]] = None
 
 @router.post("/full")
 async def sync_full_data(
