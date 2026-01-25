@@ -54,57 +54,45 @@ def sync_data(db: Session, data: Dict[str, Any]):
         
         db.flush()
 
-        # 2. Sincronizar Turnos
+        # 2. Sincronizar Turnos (Optimizado)
+        # Pre-cargar empleados para evitar miles de SELECT
+        all_emps = {e.nombre_completo: e.id for e in db.query(sql_models.Empleado).all()}
+        
         for anio_str, meses_data in data['cuadrantes'].items():
-            # Convertir año (puede venir como "2025" o "2025.0")
             anio = int(float(anio_str))
             for mes_str, vigilantes_list in meses_data.items():
-                # Saltar claves especiales como "11_cambios"
                 if not mes_str.replace('.', '').isdigit():
                     continue
-                    
-                # Convertir mes (puede venir como "11" o "11.0")
                 mes = int(float(mes_str))
                 
                 for vig_data in vigilantes_list:
                     nombre = vig_data["nombre"]
-                    turnos_dict = vig_data.get("turnos", {})
+                    emp_id = all_emps.get(nombre)
+                    if not emp_id: continue
                     
-                    empleado = db.query(sql_models.Empleado).filter(sql_models.Empleado.nombre_completo == nombre).first()
-                    if not empleado:
-                        continue
-                    
+                    # Eliminar antiguos del mes de un plumazo
                     db.query(sql_models.Turno).filter(
-                        sql_models.Turno.empleado_id == empleado.id,
+                        sql_models.Turno.empleado_id == emp_id,
                         sql_models.Turno.anio == anio,
                         sql_models.Turno.mes == mes
-                    ).delete()
+                    ).delete(synchronize_session=False)
                     
-                    for dia_str, turno_info in turnos_dict.items():
-                        if isinstance(turno_info, dict):
-                            # Nuevo formato enriquecido (Cerebro Único)
-                            codigo = turno_info.get("codigo", "")
-                            h_t = float(turno_info.get("t", 0))
-                            h_n = float(turno_info.get("n", 0))
-                            h_f = float(turno_info.get("f", 0))
-                            es_f = bool(turno_info.get("festivo", False))
+                    turnos_objs = []
+                    for dia_str, t_info in vig_data.get("turnos", {}).items():
+                        if isinstance(t_info, dict):
+                            codigo, h_t, h_n, h_f, es_f = t_info.get("codigo", ""), float(t_info.get("t", 0)), float(t_info.get("n", 0)), float(t_info.get("f", 0)), bool(t_info.get("festivo", False))
                         else:
-                            # Formato antiguo (solo código)
-                            codigo = turno_info
-                            h_t, h_n, h_f, es_f = 0.0, 0.0, 0.0, False
+                            codigo, h_t, h_n, h_f, es_f = t_info, 0.0, 0.0, 0.0, False
 
-                        nuevo_turno = sql_models.Turno(
-                            empleado_id=empleado.id,
-                            anio=anio,
-                            mes=mes,
-                            dia=int(float(dia_str)),
-                            codigo_turno=codigo,
-                            horas_trabajadas=h_t,
-                            horas_nocturnas=h_n,
-                            horas_festivas=h_f,
-                            es_festivo=es_f
-                        )
-                        db.add(nuevo_turno)
+                        turnos_objs.append(sql_models.Turno(
+                            empleado_id=emp_id, anio=anio, mes=mes, 
+                            dia=int(float(dia_str)), codigo_turno=codigo,
+                            horas_trabajadas=h_t, horas_nocturnas=h_n, 
+                            horas_festivas=h_f, es_festivo=es_f
+                        ))
+                    
+                    if turnos_objs:
+                        db.bulk_save_objects(turnos_objs)
 
         # 3. Sincronizar Configuración de Turnos
         for codigo, config_data in data['config_turnos'].items():
