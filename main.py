@@ -46,6 +46,34 @@ log_info(f"Iniciando API - Ambiente: {settings.ENVIRONMENT}")
 # Importar routers (después de logging)
 from routers import auth, turnos, permutas, empleados, sync, vacaciones
 
+# --- MIGRACIÓN AUTOMÁTICA DE BASE DE DATOS ---
+def run_auto_migrations():
+    from sqlalchemy import text
+    from models.database import engine
+    from utils.logging_config import log_info
+    
+    log_info("Ejecutando migraciones automáticas...")
+    queries = [
+        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS horas_trabajadas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS horas_nocturnas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS horas_festivas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS es_festivo BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE config_turnos ADD COLUMN IF NOT EXISTS horas_total FLOAT DEFAULT 0.0;",
+        "ALTER TABLE config_turnos ADD COLUMN IF NOT EXISTS horas_nocturnas FLOAT DEFAULT 0.0;"
+    ]
+    
+    with engine.connect() as conn:
+        for q in queries:
+            try:
+                conn.execute(text(q))
+                conn.commit()
+            except Exception as e:
+                log_info(f"Aviso en migración (puede ser normal): {e}")
+    log_info("Migraciones finalizadas.")
+
+# Ejecutar antes de crear la APP
+run_auto_migrations()
+
 # Crear app FastAPI
 app = FastAPI(
     title=settings.API_TITLE,
