@@ -2,7 +2,16 @@
 
 Todas las modificaciones notables del proyecto se documentan aquí.
 
-## [v1.3.0] - 2026-01-22
+## [v1.3.1] - 2026-01-27
+
+### ✨ Añadido
+- **Mejoras visuales en el calendario**: Resaltado de fines de semana (azul claro) y festivos (melocotón claro) con tonos claros para mejorar la legibilidad.
+
+### 🔧 Mantenimiento
+- **Corrección de puerto dinámico**: El API ahora detecta automáticamente la variable `$PORT`, corrigiendo el log de arranque en Render.
+
+---
+
 
 ### ✨ Añadido
 - **Vista multi-empleado para coordinadores**: Nuevo endpoint `/api/schedule/{year}/{month}/empleado/{empleado_id}` permite ver turnos de cualquier empleado

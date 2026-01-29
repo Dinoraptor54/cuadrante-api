@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     
     # API
     API_TITLE: str = "Cuadrante Vigilantes API"
-    API_VERSION: str = "1.3.0"
-    API_PORT: int = int(os.getenv("API_PORT", "8000"))
+    API_VERSION: str = "1.3.1"
+    API_PORT: int = int(os.getenv("API_PORT", os.getenv("PORT", "8000")))
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
     
     # Base de Datos

@@ -86,7 +86,13 @@ export const ui = {
             dayCell.appendChild(dayNum);
 
             // Check if there is a shift for this day
-            const shiftCode = userShifts[i];
+            const turnoData = userShifts[i] || {};
+            const shiftCode = typeof turnoData === 'object' ? turnoData.codigo : turnoData;
+            const isHoliday = typeof turnoData === 'object' ? turnoData.es_festivo : false;
+
+            if (isHoliday) {
+                dayCell.classList.add('holiday');
+            }
 
             if (shiftCode) {
                 const shiftText = document.createElement('span');

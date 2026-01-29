@@ -9,17 +9,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def migrate():
-    # Obtener la URL de la base de datos (priorizar la de producción si estamos en modo despliegue)
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        print("❌ Error: No se encontró DATABASE_URL en el entorno.")
-        return
+    # Intentar obtener la URL de producción (Supabase)
+    database_url = "postgresql://postgres.wmnnbkkiskfvbxdgxcby:Dinor%40ptor55.@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
+    
+    # Fallback al entorno si no se ha configurado
+    env_url = os.getenv("DATABASE_URL")
+    if env_url and "sqlite" not in env_url:
+        database_url = env_url
 
-    # Corrección para postgresql://
-    if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
-
-    print(f"🚀 Iniciando migración en: {database_url[:50]}...")
+    print(f"🚀 Iniciando migración en: {database_url[:70]}...")
     engine = create_engine(database_url)
 
     queries = [

@@ -231,12 +231,25 @@
         }
 
         .weekend {
-            background: #161b2c;
-            /* Ligeramente diferente para findes */
+            background: #e0f2fe;
+            /* Azul celeste muy suave */
+            color: #1e293b;
+            /* Texto oscuro para contraste */
+        }
+
+        .weekend .day-number {
+            color: #64748b;
         }
 
         .holiday {
+            background: #ffedd5 !important;
+            /* Melocotón/Naranja claro */
+            color: #1e293b !important;
             border-bottom: 3px solid var(--error);
+        }
+
+        .holiday .day-number {
+            color: #64748b;
         }
 
         .holiday::after {

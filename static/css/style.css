@@ -70,6 +70,7 @@ h1 {
     text-align: center;
     background: linear-gradient(to right, #60a5fa, #a78bfa);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -211,21 +212,21 @@ button:active {
 
 /* Day Types */
 .day-cell.weekend {
-    background-color: #2a303c; /* Darker/Different tone for weekends */
-    border: 1px solid #3b4555;
+    background-color: #e0f2fe;
+    /* Azul celeste muy suave */
+    color: #1e293b;
 }
 
 .day-cell.holiday {
-    background-color: #3f2e2e; /* Reddish tint for holidays */
-    border: 1px solid #7f1d1d;
+    background-color: #ffedd5;
+    /* Melocotón/Naranja claro */
+    color: #1e293b;
+    border: 1px solid #f97316;
 }
 
-.day-cell.weekend .day-number {
-    color: #93c5fd; /* Light blue for weekend numbers */
-}
-
+.day-cell.weekend .day-number,
 .day-cell.holiday .day-number {
-    color: #fca5a5; /* Light red for holiday numbers */
+    color: #64748b;
 }
 
 /* Shift Badges (Updated) */
