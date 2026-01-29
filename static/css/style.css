@@ -212,21 +212,21 @@ button:active {
 
 /* Day Types */
 .day-cell.weekend {
-    background-color: #e0f2fe;
-    /* Azul celeste muy suave */
-    color: #1e293b;
+    background-color: #2e3b4e;
+    /* Un tono más claro que bg-card (#1e293b) pero sutil */
+    color: var(--text-main);
 }
 
 .day-cell.holiday {
-    background-color: #ffedd5;
-    /* Melocotón/Naranja claro */
-    color: #1e293b;
-    border: 1px solid #f97316;
+    background-color: #3f3632;
+    /* Un tono cálido muy sutil */
+    color: var(--text-main);
+    border: 1px solid #7c2d12;
 }
 
 .day-cell.weekend .day-number,
 .day-cell.holiday .day-number {
-    color: #64748b;
+    color: var(--text-main);
 }
 
 /* Shift Badges (Updated) */
