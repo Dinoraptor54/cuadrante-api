@@ -212,16 +212,16 @@ button:active {
 
 /* Day Types */
 .day-cell.weekend {
-    background-color: #2e3b4e;
-    /* Un tono más claro que bg-card (#1e293b) pero sutil */
+    background-color: #4a2020;
+    /* Rojo oscuro apagado - destaca sutilmente */
     color: var(--text-main);
 }
 
 .day-cell.holiday {
-    background-color: #3f3632;
-    /* Un tono cálido muy sutil */
+    background-color: #5c1a1a;
+    /* Rojo oscuro intenso - más visible que weekend */
     color: var(--text-main);
-    border: 1px solid #7c2d12;
+    border: 1px solid #7f1d1d;
 }
 
 .day-cell.weekend .day-number,
