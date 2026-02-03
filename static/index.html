@@ -428,12 +428,45 @@
                     <button class="action-btn" onclick="window.location.hash = '#schedule'">
                         📅 Ver Cuadrante
                     </button>
-                    <button class="action-btn" onclick="window.location.hash = '#vacation'">
+                    <button id="btn-solicitar-vacaciones" class="action-btn"
+                        onclick="window.location.hash = '#vacation'">
                         🏖️ Solicitar Vacaciones
                     </button>
-                    <button class="action-btn" onclick="alert('Funcionalidad en desarrollo: Solicitar Cambio')">
-                        🔄 Solicitar Cambio
+                    <button id="btn-solicitar-permuta" class="action-btn" onclick="window.location.hash = '#permuta'">
+                        🔄 Solicitar Permuta (Cambio)
                     </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Permuta Request View -->
+        <section id="permuta-view" class="view hidden">
+            <header class="app-header">
+                <button class="back-btn" onclick="window.location.hash = '#dashboard'">⬅ Volver</button>
+                <h2>Solicitar Permuta</h2>
+            </header>
+            <div class="content">
+                <div class="login-container" style="justify-content: flex-start; padding-top: 2rem;">
+                    <form id="permuta-form">
+                        <div class="form-group">
+                            <label for="permuta-fecha-origen">Mi día de turno (Fecha Origen)</label>
+                            <input type="date" id="permuta-fecha-origen" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="permuta-fecha-destino">Día que deseo (Fecha Destino)</label>
+                            <input type="date" id="permuta-fecha-destino" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="permuta-email-destino">Email del compañero/a</label>
+                            <input type="email" id="permuta-email-destino" placeholder="ejemplo@correo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="permuta-motivo">Motivo (Opcional)</label>
+                            <input type="text" id="permuta-motivo" placeholder="Ej: Asunto familiar">
+                        </div>
+                        <button type="submit">Enviar Solicitud</button>
+                        <p id="permuta-msg" class="error-msg" style="color: var(--text-main);"></p>
+                    </form>
                 </div>
             </div>
         </section>
@@ -565,6 +598,18 @@
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.detail || 'Error al solicitar vacaciones');
+                }
+                return await response.json();
+            },
+            async requestPermuta(token, data) {
+                const response = await fetch(`${API_URL}/api/permutas/solicitar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al solicitar permuta');
                 }
                 return await response.json();
             }
@@ -765,7 +810,6 @@
             if (vacationForm) {
                 vacationForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    // Vacation logic... same as before
                     const start = document.getElementById('vac-start').value;
                     const end = document.getElementById('vac-end').value;
                     const reason = document.getElementById('vac-reason').value;
@@ -778,6 +822,40 @@
                         msgEl.textContent = '✅ Solicitud enviada';
                         msgEl.style.color = 'var(--success)';
                         setTimeout(() => { window.location.hash = '#dashboard'; vacationForm.reset(); msgEl.textContent = ''; }, 2000);
+                    } catch (error) {
+                        msgEl.textContent = `❌ Error: ${error.message}`;
+                        msgEl.style.color = 'var(--error)';
+                    }
+                });
+            }
+
+            const permutaForm = document.getElementById('permuta-form');
+            if (permutaForm) {
+                permutaForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const fecha_origen = document.getElementById('permuta-fecha-origen').value;
+                    const fecha_destino = document.getElementById('permuta-fecha-destino').value;
+                    const email_destino = document.getElementById('permuta-email-destino').value;
+                    const motivo = document.getElementById('permuta-motivo').value;
+                    const msgEl = document.getElementById('permuta-msg');
+
+                    try {
+                        msgEl.textContent = 'Enviando...';
+                        msgEl.style.color = 'var(--text-main)';
+                        const token = auth.getToken();
+                        await api.requestPermuta(token, {
+                            fecha_origen,
+                            fecha_destino,
+                            email_destino,
+                            motivo
+                        });
+                        msgEl.textContent = '✅ Solicitud de permuta enviada. Se ha notificado al compañero/a por email.';
+                        msgEl.style.color = 'var(--success)';
+                        setTimeout(() => {
+                            window.location.hash = '#dashboard';
+                            permutaForm.reset();
+                            msgEl.textContent = '';
+                        }, 3000);
                     } catch (error) {
                         msgEl.textContent = `❌ Error: ${error.message}`;
                         msgEl.style.color = 'var(--error)';
@@ -801,6 +879,7 @@
                 case '#dashboard': await loadDashboard(); ui.showView('dashboard-view'); break;
                 case '#schedule': loadSchedule(); ui.showView('schedule-view'); break;
                 case '#vacation': ui.showView('vacation-view'); break;
+                case '#permuta': ui.showView('permuta-view'); break;
                 default: ui.showView('dashboard-view');
             }
         }

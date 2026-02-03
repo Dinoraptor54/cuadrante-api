@@ -50,3 +50,7 @@ def update_permuta_status(db: Session, permuta: sql_models.Permuta, nuevo_estado
     db.commit()
     db.refresh(permuta)
     return permuta
+
+def get_all_permutas(db: Session) -> List[sql_models.Permuta]:
+    """Obtiene todas las permutas (para modo administrador)"""
+    return db.query(sql_models.Permuta).order_by(sql_models.Permuta.fecha_solicitud.desc()).all()

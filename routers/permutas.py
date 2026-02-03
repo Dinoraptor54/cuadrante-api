@@ -328,3 +328,18 @@ async def get_mis_permutas(
     Alias de /mis-solicitudes para compatibilidad
     """
     return await get_mis_solicitudes(current_user, db)
+
+
+@router.get("/admin/all", response_model=List[PermutaResponse])
+async def get_all_permutas_admin(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene todas las permutas registradas (Solo para coordinadores)
+    """
+    if current_user.get("rol") != "coordinador":
+        raise HTTPException(status_code=403, detail="No autorizado para ver todas las permutas")
+    
+    permutas = permutas_service.get_all_permutas(db)
+    return [map_permuta_response(p) for p in permutas]

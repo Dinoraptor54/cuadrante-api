@@ -47,3 +47,7 @@ def update_estado(db: Session, vacacion: sql_models.Vacacion, nuevo_estado: str)
     db.commit()
     db.refresh(vacacion)
     return vacacion
+
+def get_all_solicitudes(db: Session):
+    """Obtiene todas las solicitudes de vacaciones (para modo administrador)"""
+    return db.query(sql_models.Vacacion).order_by(sql_models.Vacacion.fecha_solicitud.desc()).all()

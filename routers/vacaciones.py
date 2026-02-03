@@ -26,6 +26,7 @@ class SolicitudVacacion(BaseModel):
 
 class VacacionResponse(BaseModel):
     id: int
+    solicitante_email: str
     fecha_inicio: str
     fecha_fin: str
     estado: str
@@ -34,6 +35,17 @@ class VacacionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+def map_vacacion_response(vacacion: sql_models.Vacacion) -> VacacionResponse:
+    return VacacionResponse(
+        id=vacacion.id,
+        solicitante_email=vacacion.solicitante.email if vacacion.solicitante else "Unknown",
+        fecha_inicio=vacacion.fecha_inicio,
+        fecha_fin=vacacion.fecha_fin,
+        estado=vacacion.estado,
+        fecha_solicitud=vacacion.fecha_solicitud,
+        motivo=vacacion.motivo
+    )
 
 # Endpoints
 @router.post("/solicitar", response_model=VacacionResponse)
@@ -78,7 +90,7 @@ async def solicitar_vacaciones(
         solicitud.fecha_fin
     )
 
-    return nueva_vacacion
+    return map_vacacion_response(nueva_vacacion)
 
 @router.get("/mis-solicitudes", response_model=List[VacacionResponse])
 async def get_mis_solicitudes(
@@ -90,4 +102,16 @@ async def get_mis_solicitudes(
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
-    return vacaciones_service.get_mis_solicitudes(db, user.id)
+    return [map_vacacion_response(v) for v in vacaciones_service.get_mis_solicitudes(db, user.id)]
+
+
+@router.get("/admin/all", response_model=List[VacacionResponse])
+async def get_all_vacaciones_admin(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtiene todas las solicitudes de vacaciones (Solo para coordinadores)"""
+    if current_user.get("rol") != "coordinador":
+        raise HTTPException(status_code=403, detail="No autorizado para ver todas las vacaciones")
+        
+    return [map_vacacion_response(v) for v in vacaciones_service.get_all_solicitudes(db)]
