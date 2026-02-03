@@ -661,10 +661,16 @@
                 }
             },
             renderProfile(user) {
-                if (Array.isArray(user) && user.length > 0) user = user[0];
+                console.log('👤 Rendering profile for:', user);
                 const nameEl = document.getElementById('user-name');
                 const roleEl = document.getElementById('user-role');
-                if (nameEl) nameEl.textContent = user.nombre_completo || 'Usuario';
+                if (!user) {
+                    if (nameEl) nameEl.textContent = 'Usuario desconocido';
+                    if (roleEl) roleEl.textContent = 'Vigilante';
+                    return;
+                }
+                if (Array.isArray(user) && user.length > 0) user = user[0];
+                if (nameEl) nameEl.textContent = user.nombre_completo || user.nombre || 'Usuario';
                 if (roleEl) roleEl.textContent = user.categoria || 'Vigilante';
             },
             renderCalendar(scheduleData, employeeName, year, month) {
@@ -900,17 +906,28 @@
         }
 
         async function loadDashboard() {
+            console.log('🏠 Loading Dashboard...');
             try {
                 const token = auth.getToken();
                 const employees = await api.getMe(token);
+                console.log('👥 Employees loaded:', employees);
+
                 state.allEmployees = Array.isArray(employees) ? employees : [employees];
-                state.selectedEmployeeIndex = 0;
-                ui.renderEmployeeList(state.allEmployees, state.selectedEmployeeIndex);
-                ui.renderProfile(state.allEmployees[0]);
-                loadSchedule();
+
+                if (state.allEmployees.length === 0) {
+                    console.warn('⚠️ No employees found in database. Please sync from Desktop app.');
+                    ui.renderProfile(null);
+                    // Still show dashboard so they can at least see empty state or logout
+                } else {
+                    state.selectedEmployeeIndex = 0;
+                    ui.renderEmployeeList(state.allEmployees, state.selectedEmployeeIndex);
+                    ui.renderProfile(state.allEmployees[0]);
+                    loadSchedule();
+                }
             } catch (error) {
-                console.error(error);
-                auth.logout();
+                console.error('❌ Error loading dashboard:', error);
+                // auth.logout(); // Don't logout instantly to see errors
+                alert('Error al cargar datos del servidor: ' + error.message);
             }
         }
 
