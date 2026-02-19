@@ -797,12 +797,10 @@
                         try {
                             const token = auth.getToken();
                             const userResponse = await api.getMe(token);
-                            // userResponse puede ser un objeto o un array de 1 elemento
                             const userInfo = Array.isArray(userResponse) ? userResponse[0] : userResponse;
                             localStorage.setItem('user_info', JSON.stringify(userInfo));
-                            console.log('✅ User info saved:', userInfo);
                         } catch (e) {
-                            console.warn('⚠️ Could not fetch user profile details at login:', e);
+                            console.warn('⚠️ Profile fetch failed:', e);
                         }
                         window.location.hash = '#dashboard';
                     } else {
@@ -924,24 +922,39 @@
 
                 state.allEmployees = Array.isArray(employees) ? employees : [employees];
 
-                const userInfoStr = localStorage.getItem('user_info');
+                let userInfoStr = localStorage.getItem('user_info');
+                if (!userInfoStr) {
+                    const meResponse = await fetch(`${API_URL}/api/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (meResponse.ok) {
+                        const meData = await meResponse.json();
+                        localStorage.setItem('user_info', JSON.stringify(meData));
+                        userInfoStr = JSON.stringify(meData);
+                    }
+                }
                 const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
 
                 if (state.allEmployees.length === 0) {
-                    console.warn('⚠️ No employees found in database. Please sync from Desktop app.');
+                    console.warn('⚠️ No employees found. Sync from Desktop.');
                     ui.renderProfile(null);
                 } else {
-                    // Autoseleccionar al usuario logueado
+                    // Autoseleccionar al usuario logueado (Búsqueda robusta)
                     let myIndex = -1;
                     if (userInfo) {
-                        myIndex = state.allEmployees.findIndex(e => e.nombre_completo === userInfo.nombre_completo || e.nombre_completo === userInfo.nombre);
+                        const myName = (userInfo.nombre_completo || userInfo.nombre || "").toLowerCase().trim();
+                        myIndex = state.allEmployees.findIndex(e => {
+                            const empName = (e.nombre_completo || e.nombre || "").toLowerCase().trim();
+                            return empName === myName;
+                        });
                     }
 
                     state.selectedEmployeeIndex = myIndex !== -1 ? myIndex : 0;
 
                     // Ocultar controles de navegación si no es coordinador
                     const selector = document.querySelector('.employee-selector');
-                    if (userInfo && userInfo.rol !== 'coordinador') {
+                    const isCoord = userInfo && (userInfo.rol === 'coordinador' || userInfo.role === 'coordinador');
+                    if (!isCoord) {
                         if (selector) selector.classList.add('hidden');
                     } else {
                         if (selector) selector.classList.remove('hidden');

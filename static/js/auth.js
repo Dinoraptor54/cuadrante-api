@@ -29,6 +29,7 @@ export const auth = {
     // Perform logout
     logout() {
         localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem('user_info');
         window.location.reload();
     }
 };
