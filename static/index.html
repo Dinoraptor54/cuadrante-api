@@ -576,10 +576,17 @@
                 return await response.json();
             },
             async getMe(token) {
-                const response = await fetch(`${API_URL}/api/empleados/`, {
+                const response = await fetch(`${API_URL}/api/auth/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error('Error al obtener perfil');
+                return await response.json();
+            },
+            async getEmployees(token) {
+                const response = await fetch(`${API_URL}/api/empleados/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Error al obtener lista de empleados');
                 return await response.json();
             },
             async getSchedule(token, year, month) {
