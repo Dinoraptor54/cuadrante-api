@@ -216,8 +216,13 @@ async def get_schedule_by_employee(
         db_perm = SessionLocal()
         try:
             from sqlalchemy import func
+            import logging
+            logger = logging.getLogger("uvicorn")
+            
             nombre_usuario = current_user.get("nombre")
             email_usuario = current_user.get("email")
+            
+            logger.info(f"🔍 Validando acceso: Usuario='{nombre_usuario}' ({email_usuario}) -> EmpleadoID={empleado_id}")
             
             # Buscar el ID del empleado del usuario actual (insensible a mayúsculas/espacios)
             user_empleado = db_perm.query(Empleado).filter(
@@ -230,8 +235,15 @@ async def get_schedule_by_employee(
                     func.lower(func.trim(Empleado.email)) == func.lower(func.trim(email_usuario))
                 ).first()
 
-            if not user_empleado or user_empleado.id != empleado_id:
-                raise HTTPException(status_code=403, detail="No autorizado para ver este cuadrante (identidad no confirmada)")
+            if not user_empleado:
+                logger.error(f"❌ No se encontró empleado para '{nombre_usuario}' o '{email_usuario}'")
+                raise HTTPException(status_code=403, detail="Perfil de empleado no vinculado a tu cuenta")
+            
+            if user_empleado.id != empleado_id:
+                logger.error(f"❌ Intento de acceso a ID ajeno: UserEmpID={user_empleado.id} vs RequestedID={empleado_id}")
+                raise HTTPException(status_code=403, detail="No tienes permiso para ver el cuadrante de otro compañero")
+                
+            logger.info(f"✅ Acceso concedido a {user_empleado.nombre_completo}")
         finally:
             db_perm.close()
     
