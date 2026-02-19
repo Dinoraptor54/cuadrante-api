@@ -934,28 +934,38 @@
                     }
                 }
                 const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+                console.log('👤 Información del Usuario actual:', userInfo);
+                console.log('👥 Lista de Empleados disponibles:', state.allEmployees);
 
                 if (state.allEmployees.length === 0) {
-                    console.warn('⚠️ No employees found. Sync from Desktop.');
+                    console.warn('⚠️ No se han encontrado empleados. Sincroniza desde el Escritorio.');
                     ui.renderProfile(null);
                 } else {
-                    // Autoseleccionar al usuario logueado (Búsqueda robusta)
+                    // Autoseleccionar al usuario logueado (Búsqueda robusta con logs)
                     let myIndex = -1;
                     if (userInfo) {
                         const myName = (userInfo.nombre_completo || userInfo.nombre || "").toLowerCase().trim();
                         const myEmail = (userInfo.email || "").toLowerCase().trim();
 
-                        myIndex = state.allEmployees.findIndex(e => {
+                        console.log(`🔍 Buscando empleado para: Nombre='${myName}', Email='${myEmail}'`);
+
+                        myIndex = state.allEmployees.findIndex((e, idx) => {
                             const empName = (e.nombre_completo || e.nombre || "").toLowerCase().trim();
                             const empEmail = (e.email || "").toLowerCase().trim();
 
-                            // Coincidencia por nombre (prioridad 1)
-                            if (myName && empName === myName) return true;
-                            // Coincidencia por email (prioridad 2)
-                            if (myEmail && empEmail === myEmail) return true;
+                            const matchName = myName && empName === myName;
+                            const matchEmail = myEmail && empEmail === myEmail;
 
+                            if (matchName || matchEmail) {
+                                console.log(`✅ ¡COINCIDENCIA! Encontrado en índice ${idx}:`, e);
+                                return true;
+                            }
                             return false;
                         });
+                    }
+
+                    if (myIndex === -1) {
+                        console.warn('❌ Usuario no identificado en la lista de empleados. Usando índice 0 por defecto (Eugenia).');
                     }
 
                     state.selectedEmployeeIndex = myIndex !== -1 ? myIndex : 0;
