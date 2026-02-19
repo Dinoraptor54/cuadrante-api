@@ -48,27 +48,46 @@ from routers import auth, turnos, permutas, empleados, sync, vacaciones
 
 # --- MIGRACIÓN AUTOMÁTICA DE BASE DE DATOS ---
 def run_auto_migrations():
-    from sqlalchemy import text
+    from sqlalchemy import text, inspect
     from models.database import engine
     from utils.logging_config import log_info
     
     log_info("Ejecutando migraciones automáticas...")
-    queries = [
-        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS horas_trabajadas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS horas_nocturnas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS horas_festivas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE turnos ADD COLUMN IF NOT EXISTS es_festivo BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE config_turnos ADD COLUMN IF NOT EXISTS horas_total FLOAT DEFAULT 0.0;",
-        "ALTER TABLE config_turnos ADD COLUMN IF NOT EXISTS horas_nocturnas FLOAT DEFAULT 0.0;"
-    ]
+    
+    inspector = inspect(engine)
+    
+    # Definición de columnas por tabla
+    migrations = {
+        "turnos": [
+            ("horas_trabajadas", "FLOAT DEFAULT 0.0"),
+            ("horas_nocturnas", "FLOAT DEFAULT 0.0"),
+            ("horas_festivas", "FLOAT DEFAULT 0.0"),
+            ("es_festivo", "BOOLEAN DEFAULT FALSE")
+        ],
+        "config_turnos": [
+            ("horas_total", "FLOAT DEFAULT 0.0"),
+            ("horas_nocturnas", "FLOAT DEFAULT 0.0")
+        ]
+    }
     
     with engine.connect() as conn:
-        for q in queries:
-            try:
-                conn.execute(text(q))
-                conn.commit()
-            except Exception as e:
-                log_info(f"Aviso en migración (puede ser normal): {e}")
+        for table_name, columns in migrations.items():
+            # Obtener columnas existentes
+            existing_columns = [c["name"] for c in inspector.get_columns(table_name)]
+            
+            for col_name, col_type in columns:
+                if col_name not in existing_columns:
+                    try:
+                        log_info(f"Añadiendo columna {col_name} a la tabla {table_name}...")
+                        conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type};"))
+                        conn.commit()
+                        log_info(f"Columna {col_name} añadida con éxito.")
+                    except Exception as e:
+                        log_info(f"Error al añadir columna {col_name}: {e}")
+                else:
+                    # debug - log_info(f"La columna {col_name} ya existe en {table_name}.")
+                    pass
+                    
     log_info("Migraciones finalizadas.")
 
 # Ejecutar antes de crear la APP
@@ -192,9 +211,16 @@ async def get_schedule_by_employee(
     from models.sql_models import Turno, Empleado
     from fastapi import HTTPException
     
-    # Verificar que el usuario sea coordinador
+    # Verificar que el usuario sea coordinador o que sea el propio empleado
     if current_user.get("rol") != "coordinador":
-        raise HTTPException(status_code=403, detail="No autorizado")
+        db_perm = SessionLocal()
+        try:
+            nombre_usuario = current_user.get("nombre")
+            user_empleado = db_perm.query(Empleado).filter(Empleado.nombre_completo == nombre_usuario).first()
+            if not user_empleado or user_empleado.id != empleado_id:
+                raise HTTPException(status_code=403, detail="No autorizado para ver este cuadrante")
+        finally:
+            db_perm.close()
     
     db = SessionLocal()
     try:

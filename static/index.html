@@ -794,6 +794,16 @@
                     const pass = document.getElementById('password').value;
                     const success = await auth.login(user, pass);
                     if (success) {
+                        try {
+                            const token = auth.getToken();
+                            const userResponse = await api.getMe(token);
+                            // userResponse puede ser un objeto o un array de 1 elemento
+                            const userInfo = Array.isArray(userResponse) ? userResponse[0] : userResponse;
+                            localStorage.setItem('user_info', JSON.stringify(userInfo));
+                            console.log('✅ User info saved:', userInfo);
+                        } catch (e) {
+                            console.warn('⚠️ Could not fetch user profile details at login:', e);
+                        }
                         window.location.hash = '#dashboard';
                     } else {
                         ui.showError('Usuario o contraseña incorrectos');
@@ -914,14 +924,31 @@
 
                 state.allEmployees = Array.isArray(employees) ? employees : [employees];
 
+                const userInfoStr = localStorage.getItem('user_info');
+                const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+
                 if (state.allEmployees.length === 0) {
                     console.warn('⚠️ No employees found in database. Please sync from Desktop app.');
                     ui.renderProfile(null);
-                    // Still show dashboard so they can at least see empty state or logout
                 } else {
-                    state.selectedEmployeeIndex = 0;
+                    // Autoseleccionar al usuario logueado
+                    let myIndex = -1;
+                    if (userInfo) {
+                        myIndex = state.allEmployees.findIndex(e => e.nombre_completo === userInfo.nombre_completo || e.nombre_completo === userInfo.nombre);
+                    }
+
+                    state.selectedEmployeeIndex = myIndex !== -1 ? myIndex : 0;
+
+                    // Ocultar controles de navegación si no es coordinador
+                    const selector = document.querySelector('.employee-selector');
+                    if (userInfo && userInfo.rol !== 'coordinador') {
+                        if (selector) selector.classList.add('hidden');
+                    } else {
+                        if (selector) selector.classList.remove('hidden');
+                    }
+
                     ui.renderEmployeeList(state.allEmployees, state.selectedEmployeeIndex);
-                    ui.renderProfile(state.allEmployees[0]);
+                    ui.renderProfile(state.allEmployees[state.selectedEmployeeIndex]);
                     loadSchedule();
                 }
             } catch (error) {
