@@ -796,11 +796,12 @@
                     if (success) {
                         try {
                             const token = auth.getToken();
-                            const userResponse = await api.getMe(token);
-                            const userInfo = Array.isArray(userResponse) ? userResponse[0] : userResponse;
+                            // Obtener identidad real del usuario actual
+                            const userInfo = await api.getMe(token);
                             localStorage.setItem('user_info', JSON.stringify(userInfo));
+                            console.log('✅ Identidad confirmada:', userInfo);
                         } catch (e) {
-                            console.warn('⚠️ Profile fetch failed:', e);
+                            console.warn('⚠️ No se pudo cargar el perfil detallado al entrar:', e);
                         }
                         window.location.hash = '#dashboard';
                     } else {
@@ -917,8 +918,8 @@
             console.log('🏠 Loading Dashboard...');
             try {
                 const token = auth.getToken();
-                const employees = await api.getMe(token);
-                console.log('👥 Employees loaded:', employees);
+                const employees = await api.getEmployees(token);
+                console.log('👥 Lista de empleados recibida:', employees);
 
                 state.allEmployees = Array.isArray(employees) ? employees : [employees];
 

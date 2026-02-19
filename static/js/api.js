@@ -34,8 +34,23 @@ export const api = {
         return await response.json();
     },
 
-    // Get current user info
+    // Get current user identity (email, nombre, rol)
     async getMe(token) {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener identidad');
+        }
+
+        return await response.json();
+    },
+
+    // Get all employees list
+    async getEmployees(token) {
         const response = await fetch(`${API_URL}/api/empleados/`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -43,7 +58,7 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw new Error('Error al obtener perfil');
+            throw new Error('Error al obtener lista de empleados');
         }
 
         return await response.json();
