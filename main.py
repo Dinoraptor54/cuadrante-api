@@ -140,7 +140,7 @@ async def root():
     """Endpoint raíz - información de la API"""
     return {
         "message": "API Cuadrante Vigilantes",
-        "version": "1.0.0",
+        "version": "11.1.4",
         "docs": "/docs",
         "status": "online"
     }
