@@ -943,9 +943,18 @@
                     let myIndex = -1;
                     if (userInfo) {
                         const myName = (userInfo.nombre_completo || userInfo.nombre || "").toLowerCase().trim();
+                        const myEmail = (userInfo.email || "").toLowerCase().trim();
+
                         myIndex = state.allEmployees.findIndex(e => {
                             const empName = (e.nombre_completo || e.nombre || "").toLowerCase().trim();
-                            return empName === myName;
+                            const empEmail = (e.email || "").toLowerCase().trim();
+
+                            // Coincidencia por nombre (prioridad 1)
+                            if (myName && empName === myName) return true;
+                            // Coincidencia por email (prioridad 2)
+                            if (myEmail && empEmail === myEmail) return true;
+
+                            return false;
                         });
                     }
 

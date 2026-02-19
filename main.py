@@ -215,10 +215,23 @@ async def get_schedule_by_employee(
     if current_user.get("rol") != "coordinador":
         db_perm = SessionLocal()
         try:
+            from sqlalchemy import func
             nombre_usuario = current_user.get("nombre")
-            user_empleado = db_perm.query(Empleado).filter(Empleado.nombre_completo == nombre_usuario).first()
+            email_usuario = current_user.get("email")
+            
+            # Buscar el ID del empleado del usuario actual (insensible a mayúsculas/espacios)
+            user_empleado = db_perm.query(Empleado).filter(
+                func.lower(func.trim(Empleado.nombre_completo)) == func.lower(func.trim(nombre_usuario))
+            ).first()
+            
+            # Fallback por email si el nombre no coincide exactamente
+            if not user_empleado and email_usuario:
+                user_empleado = db_perm.query(Empleado).filter(
+                    func.lower(func.trim(Empleado.email)) == func.lower(func.trim(email_usuario))
+                ).first()
+
             if not user_empleado or user_empleado.id != empleado_id:
-                raise HTTPException(status_code=403, detail="No autorizado para ver este cuadrante")
+                raise HTTPException(status_code=403, detail="No autorizado para ver este cuadrante (identidad no confirmada)")
         finally:
             db_perm.close()
     
