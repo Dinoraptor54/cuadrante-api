@@ -923,19 +923,21 @@
 
                 state.allEmployees = Array.isArray(employees) ? employees : [employees];
 
-                let userInfoStr = localStorage.getItem('user_info');
-                if (!userInfoStr) {
-                    const meResponse = await fetch(`${API_URL}/api/auth/me`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (meResponse.ok) {
-                        const meData = await meResponse.json();
-                        localStorage.setItem('user_info', JSON.stringify(meData));
-                        userInfoStr = JSON.stringify(meData);
-                    }
+                // Forzar obtención de identidad real para evitar caché de sesiones cruzadas
+                console.log('🔍 Validando identidad real con el servidor...');
+                let userInfo = null;
+                try {
+                    userInfo = await api.getMe(token);
+                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    console.log('✅ Identidad confirmada:', userInfo);
+                } catch (e) {
+                    console.error('❌ Error al validar identidad:', e);
+                    // Fallback a localStorage si la red falla
+                    const cached = localStorage.getItem('user_info');
+                    userInfo = cached ? JSON.parse(cached) : null;
                 }
-                const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-                console.log('👤 Información del Usuario actual:', userInfo);
+
+                console.log('👤 Información del Usuario para autoselección:', userInfo);
                 console.log('👥 Lista de Empleados disponibles:', state.allEmployees);
 
                 if (state.allEmployees.length === 0) {
@@ -948,7 +950,7 @@
                         const myName = (userInfo.nombre_completo || userInfo.nombre || "").toLowerCase().trim();
                         const myEmail = (userInfo.email || "").toLowerCase().trim();
 
-                        console.log(`🔍 Buscando empleado para: Nombre='${myName}', Email='${myEmail}'`);
+                        console.log(`🔍 Buscando coincidencia para: Nombre='${myName}', Email='${myEmail}'`);
 
                         myIndex = state.allEmployees.findIndex((e, idx) => {
                             const empName = (e.nombre_completo || e.nombre || "").toLowerCase().trim();

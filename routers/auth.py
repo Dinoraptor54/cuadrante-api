@@ -154,6 +154,8 @@ async def login(request: fastapi.Request, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserInfo)
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Obtiene información del usuario actual"""
+    from utils.logging_config import log_info
+    log_info(f"🔑 Petición /me para: {current_user.get('email')} ({current_user.get('nombre')})")
     return current_user
 
 @router.post("/register")
